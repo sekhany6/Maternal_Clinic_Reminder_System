@@ -170,7 +170,8 @@ Once the server is running, the system will:
 
 ## Author
 
-**Sekhany6**  
+MWANGI JOY WAMBUI 
+
 GitHub: [https://github.com/sekhany6](https://github.com/sekhany6)
 
 ---

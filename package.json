@@ -1,0 +1,23 @@
+{
+  "name": "maternal-clinic-reminder",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "africastalking": "^0.7.9",
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "mysql2": "^3.19.0",
+    "node-cron": "^4.2.1"
+  },
+  "devDependencies": {
+    "esm": "^3.2.25"
+  }
+}

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clinic Reminder</title>
+    <link rel="icon" type="image/png" href="../images/remindericon.png">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<header>    
+ <nav> 
+    <a href="index.html">Logout</a>
+    <a href="index.html">Home</a>
+    <a href="login.html">Login</a>
+ </nav>
+</header>
+<body>
+    <h1>Dashboard</h1>
+
+    <section class="dashboard-search">
+        <h2>Find Mother and Child Schedule</h2>
+        <form id="motherSearchForm">
+            <input type="tel" id="motherSearchPhone" placeholder="Mother Phone Number" required>
+            <button type="submit">Search</button>
+        </form>
+        <div id="motherSearchResults"></div>
+    </section>
+
+    <div class="card-grid">
+        <a class="card" href="register-mother.html">Register Mother</a>
+        <a class="card" href="register-baby.html">Register Baby</a>
+        <a class="card" href="schedules.html">View Schedule</a>
+        <a class="card" href="reminders.html">View Reminders</a>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>     

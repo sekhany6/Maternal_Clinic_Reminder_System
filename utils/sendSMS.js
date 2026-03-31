@@ -1,36 +1,37 @@
-const africastalking = require("africastalking")({
-    apiKey: process.env.AT_API_KEY,
-    username: process.env.AT_USERNAME
-});
-
-const sms = africastalking.SMS;
-
 const sendSMS = async (phone, message) => {
     try {
-        const result = await sms.send({ 
-            to: phone,
-            message: message,
-       });
+        const response = await fetch("https://sms.textsms.co.ke/api/services/sendsms/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                apikey: process.env.TEXTSMS_API_KEY,
+                partnerID: process.env.TEXTSMS_PARTNER_ID,
+                message: message,
+                shortcode: process.env.TEXTSMS_SHORTCODE,
+                mobile: phone
+            })
+        });
 
-     console.log("SMS Result:", JSON.stringify(result, null, 2));
+        const result = await response.json();
+        console.log("SMS Result:", JSON.stringify(result, null, 2));
 
-         // ✅ Safely check if Recipients exists before accessing it
-        const recipients = result?.SMSMessageData?.Recipients;
+        // Check response code
+        const smsResponse = result?.responses?.[0];
 
-        if (!recipients || recipients.length === 0) {
-            throw new Error(`No recipients in response: ${JSON.stringify(result)}`);
+        if (!smsResponse) {
+            throw new Error("No response received from TextSMS");
         }
 
-        const recipient = recipients[0];
-
-        if (recipient.status !== "Success") {
-            throw new Error(`SMS rejected: ${recipient.status}`);
+        if (smsResponse["response-code"] !== 200) {
+            throw new Error(`SMS rejected: ${smsResponse["response-description"]}`);
         }
 
         return result;
 
     } catch (error) {
-        console.error("SMS failed:", error);
+        console.error("SMS failed:", error.message);
         throw error;
     }
 };

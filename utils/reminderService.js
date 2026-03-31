@@ -11,14 +11,14 @@ const queryAsync = (sql, params) => {
     });
 };
 
-// Format phone number to international format for Africa's Talking
+// Format phone number to international format for TextSMS 
 const formatPhone = (phone) => {
     phone = phone.trim();
     if (phone.startsWith("0")) {
-        return "+254" + phone.slice(1); // Change 254 to your country code if needed
+        return "254" + phone.slice(1); // Change 254 to your country code if needed
     }
-    if (phone.startsWith("254") && !phone.startsWith("+")) {
-        return "+" + phone;
+    if (phone.startsWith("+254") && !phone.startsWith("+")) {
+        return phone.slice(1); // Remove the + if it exists, since TextSMS expects just the country code and number
     }
     return phone;
 };
@@ -59,7 +59,7 @@ const sendReminders = async () => {
         try {
 
             const formattedPhone = formatPhone(row.phone_no);
-            console.log(`Formatted phone: ${formattedPhone}`); // should print +254111390052
+            console.log(`Formatted phone: ${formattedPhone}`); // should print 254111390052
         
 
 
@@ -71,11 +71,11 @@ const sendReminders = async () => {
             // SEND SMS
             await sendSMS(formattedPhone, smsMessage);
 
-            // Await INSERT so errors are caught, and column order is correct
+            // Record the reminder as sent
             await queryAsync(`
                  INSERT INTO reminder_records
                  (mother_id, phone_no, reminder_sent, message_status)
-                  VALUES (?, ?, CURDATE(), 'Sent')
+                 VALUES (?, ?, CURDATE(), 'Sent')
                 `, [row.mother_id, row.phone_no]);
 
             // Await UPDATE so it completes before moving to the next row

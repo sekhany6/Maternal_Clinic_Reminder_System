@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clinic Reminder</title>
+    <link rel="icon" type="image/png" href="../images/remindericon.png">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<header>    
+ <nav> 
+    <a href="index.html">Logout</a>
+    <a href="index.html">Home</a>
+    <a href="login.html">Login</a>
+ </nav> 
+</header>
+<body>
+<h2>Staff Registration</h2>
+<form id="registerStaffForm">
+    <label for="name">Name:</label><br>
+    <input type="text" id="name" name="name" required><br><br>
+    
+    <label for="email">Email:</label><br>
+    <input type="email" id="email" name="email" required><br><br>
+    
+    <label for="password">Password:</label><br>
+    <input type="password" id="password" name="password" required><br><br>
+
+    <label for="confirm_password">Confirm Password:</label><br>
+    <input type="password" id="confirm_password" name="confirm_password" required><br><br>
+
+    <label for="role">Role:</label><br>
+    <select id="role" name="role" required>
+        <option value="">Select role</option>
+        <option value="Doctor">Doctor</option>
+        <option value="Nurse">Nurse</option>
+        <option value="Receptionist">Receptionist</option>
+    </select><br><br>
+
+    <label for="hospital_id">Hospital ID:</label><br>
+    <input type="number" id="hospital_id" name="hospital_id" required><br><br>
+    
+    <button type="submit">Register</button>
+</form>
+
+<p>Already have an account? <a href="login.html">Log In</a> </p>
+
+<script src="js/signup.js"></script>
+
+</body>
+</html>

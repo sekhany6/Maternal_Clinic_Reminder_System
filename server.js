@@ -1,4 +1,6 @@
 const express = require("express");
+const cors = require("cors");
+const path = require("path");
 require("dotenv").config();
 
 const db = require("./db/connection");
@@ -12,7 +14,10 @@ const reminderRoutes = require("./routes/reminderRoutes");
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "frontend")));
+app.use("/images", express.static(path.join(__dirname, "images")));
 
 
 // CONNECT ROUTES
@@ -50,7 +55,6 @@ app.get("/test-db", (req, res) => {
 });
 // SCHEDULED JOB FOR REMINDERS
 const cron = require("node-cron");
-const sendSMS = require("./utils/sendSMS");
 const sendReminders = require("./utils/reminderService");
 
 cron.schedule("* * * * *", async () => {

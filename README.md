@@ -106,9 +106,6 @@ DB_PASSWORD=your_database_password
 DB_NAME=your_database_name
 DB_PORT=3306
 
-AT_API_KEY=your_africas_talking_api_key
-AT_USERNAME=your_africas_talking_username
-
 PORT=3000
 ```
 
@@ -129,49 +126,45 @@ Once the server is running, the system will:
 
 ### Mothers
 
-| Method | Endpoint           | Description            |
-| ------ | ------------------ | ---------------------- |
-| GET    | `/api/mothers`     | Get all mothers        |
-| POST   | `/api/mothers`     | Register a new mother  |
-| GET    | `/api/mothers/:id` | Get a specific mother  |
-| PUT    | `/api/mothers/:id` | Update mother details  |
-| DELETE | `/api/mothers/:id` | Delete a mother record |
+| Method | Endpoint                        | Description                                      |
+| ------ | ------------------------------- | ------------------------------------------------ |
+| POST   | `/api/mothers/register`         | Register a new mother                            |
+| GET    | `/api/mothers/search?phone=...` | Search a mother by phone and return her children |
 
 ### Babies
 
-| Method | Endpoint          | Description          |
-| ------ | ----------------- | -------------------- |
-| GET    | `/api/babies`     | Get all baby records |
-| POST   | `/api/babies`     | Add a new baby       |
-| GET    | `/api/babies/:id` | Get a specific baby  |
+| Method | Endpoint               | Description                                       |
+| ------ | ---------------------- | ------------------------------------------------- |
+| POST   | `/api/babies/register` | Register a new baby and generate vaccine schedule |
 
 ### Vaccines
 
-| Method | Endpoint        | Description          |
-| ------ | --------------- | -------------------- |
-| GET    | `/api/vaccines` | Get all vaccines     |
-| POST   | `/api/vaccines` | Add a vaccine record |
+| Method | Endpoint                          | Description                                  |
+| ------ | --------------------------------- | -------------------------------------------- |
+| GET    | `/api/vaccines/schedule/:baby_id` | Get vaccination schedule for a specific baby |
+| GET    | `/api/vaccines/schedules`         | Get upcoming vaccination schedules           |
+| GET    | `/api/vaccines/reminders`         | Get sent reminder records                    |
+| POST   | `/api/vaccines/record`            | Record a completed vaccination               |
 
 ### Reminders
 
-| Method | Endpoint         | Description       |
-| ------ | ---------------- | ----------------- |
-| GET    | `/api/reminders` | Get all reminders |
-| POST   | `/api/reminders` | Create a reminder |
+| Method | Endpoint                        | Description                       |
+| ------ | ------------------------------- | --------------------------------- |
+| GET    | `/api/reminders/send-reminders` | Trigger reminder sending manually |
 
 ### Staff
 
-| Method | Endpoint     | Description        |
-| ------ | ------------ | ------------------ |
-| GET    | `/api/staff` | Get all staff      |
-| POST   | `/api/staff` | Add a staff member |
+| Method | Endpoint              | Description                 |
+| ------ | --------------------- | --------------------------- |
+| POST   | `/api/staff/register` | Register a new staff member |
+| POST   | `/api/staff/login`    | Login staff member          |
 
 ---
 
 ## Author
 
 **Sekhany6**  
-GitHub: [https://github.com/sekhany6](https://github.com/sekhany6)
+GitHub: [https://github.com/sekhany6](https://github.com/sekhany6/Maternal_Clinic_Reminder_System)
 
 ---
 

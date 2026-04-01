@@ -163,8 +163,14 @@ Once the server is running, the system will:
 
 ## Author
 
+<<<<<<< HEAD
 **Sekhany6**  
 GitHub: [https://github.com/sekhany6](https://github.com/sekhany6/Maternal_Clinic_Reminder_System)
+=======
+MWANGI JOY WAMBUI 
+
+GitHub: [https://github.com/sekhany6](https://github.com/sekhany6)
+>>>>>>> 3107d2ea4fb098a80bc699831a5469247d61f16b
 
 ---
 

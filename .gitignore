@@ -1,4 +1,4 @@
-# Node modules (VERY IMPORTANT)
+# Node modules
 node_modules/
 
 # Environment variables (SECRETS)
@@ -13,14 +13,14 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
-# VS Code settings (optional)
+# VS Code settings
 .vscode/
 
 # Temporary files
 temp/
 tmp/
 
-# Build files (if any)
+# Build files
 dist/
 build/
 

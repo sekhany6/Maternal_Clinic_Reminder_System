@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upcoming Vaccinations - Clinic Reminder</title>
+    <link rel="icon" type="image/png" href="../images/remindericon.png">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .vaccination-container {
+            padding: 20px;
+        }
+        .vaccination-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .vaccination-table th, .vaccination-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .vaccination-table th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .vaccination-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        .send-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .send-btn:hover {
+            background-color: #45a049;
+        }
+        .send-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .reminder-badge {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .reminder-sent {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .reminder-not-sent {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: #000;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group textarea, .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .btn-group {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-submit {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-submit:hover {
+            background-color: #45a049;
+        }
+        .btn-cancel {
+            background-color: #f44336;
+            color: white;
+        }
+        .btn-cancel:hover {
+            background-color: #da190b;
+        }
+        .alert {
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .search-section {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .search-section input {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            flex: 1;
+            max-width: 300px;
+            box-sizing: border-box;
+        }
+        .search-section input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+        }
+        .search-count {
+            font-size: 14px;
+            color: #666;
+            font-weight: bold;
+        }
+        .table-section {
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        .table-section h2 {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 15px;
+            margin: 0 0 15px 0;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .table-section.sent h2 {
+            background-color: #2196F3;
+        }
+    </style>
+</head>
+<header>    
+ <nav> 
+    <a href="index.html">Logout</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="login.html">Login</a>
+ </nav>
+</header>
+<body>
+    <div class="vaccination-container">
+        <h1>Pending Vaccinations - Current Month</h1>
+        <p>Doctor: View and send reminders for all pending vaccinations this month</p>
+        
+        <div id="alertbox"></div>
+        
+        <div class="search-section" id="searchSection" style="display: none;">
+            <input 
+                type="text" 
+                id="searchInput" 
+                placeholder="Search by mother's name..." 
+                autocomplete="off"
+            />
+            <span class="search-count" id="searchCount"></span>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Loading vaccinations...</p>
+        </div>
+
+        <!-- Table 1: Pending Reminders (Not Sent) -->
+        <div class="table-section pending" id="pendingSection" style="display: none;">
+            <h2>Pending Reminders (Not Yet Sent)</h2>
+            <table class="vaccination-table" id="pendingTable">
+                <thead>
+                    <tr>
+                        <th>Baby Name</th>
+                        <th>Mother Name</th>
+                        <th>Phone Number</th>
+                        <th>Vaccine</th>
+                        <th>Due Date</th>
+                        <th>Vaccination Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="pendingTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Table 2: Sent Reminders (But Still Pending) -->
+        <div class="table-section sent" id="sentSection" style="display: none;">
+            <h2>Pending Vaccinations (Reminders Already Sent)</h2>
+            <table class="vaccination-table" id="sentTable">
+                <thead>
+                    <tr>
+                        <th>Baby Name</th>
+                        <th>Mother Name</th>
+                        <th>Phone Number</th>
+                        <th>Vaccine</th>
+                        <th>Due Date</th>
+                        <th>Vaccination Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="sentTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <p id="noDataMessage" style="text-align: center; margin-top: 20px; display: none;">
+            No pending vaccinations found.
+        </p>
+    </div>
+
+    <!-- Message Modal -->
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Send Vaccination Reminder</h2>
+            <form id="messageForm">
+                <input type="hidden" id="scheduleId" />
+                <input type="hidden" id="motherId" />
+                <input type="hidden" id="motherName" />
+                <input type="hidden" id="phoneNo" />
+                <input type="hidden" id="vaccName" />
+                <input type="hidden" id="babyName" />
+                <input type="hidden" id="dueDate" />
+
+                <div class="form-group">
+                    <label>Baby Name:</label>
+                    <input type="text" id="modalBabyName" disabled />
+                </div>
+
+                <div class="form-group">
+                    <label>Vaccine:</label>
+                    <input type="text" id="modalVaccine" disabled />
+                </div>
+
+                <div class="form-group">
+                    <label>Due Date:</label>
+                    <input type="text" id="modalDueDate" disabled />
+                </div>
+
+                <div class="form-group">
+                    <label>Mother Phone:</label>
+                    <input type="text" id="modalPhone" disabled />
+                </div>
+
+                <div class="form-group">
+                    <label>Message to be sent:</label>
+                    <textarea id="messagePreview" disabled></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-cancel" id="cancelBtn">Cancel</button>
+                    <button type="submit" class="btn btn-submit">Send Reminder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/upcoming-vaccinations.js"></script>
+</body>
+</html>

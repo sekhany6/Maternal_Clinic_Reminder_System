@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 
 const db = require("./db/connection");
@@ -16,6 +17,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser()); // Middleware for parsing cookies
 app.use(express.static(path.join(__dirname, "frontend")));
 app.use("/images", express.static(path.join(__dirname, "images")));
 

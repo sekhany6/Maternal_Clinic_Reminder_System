@@ -14,19 +14,49 @@
  </nav>
 </header>
 <body>
-<h2>Sent Reminders</h2>
+<h2>Sent Vaccination Reminders</h2>
 
-<table border="1">
-    <thead>
-        <tr>
-            <th>Mother</th>
-            <th>Phone</th>
-            <th>Sent Date</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody id="reminderTable"></tbody>
-</table>
+<div class="reminders-container" style="padding: 20px; max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <div>
+        <h3 style="background-color: #FF9800; color: white; padding: 10px; border-radius: 4px;">Pending Vaccinations with Sent Reminders</h3>
+        <table border="1" width="100%" style="margin-top: 10px;">
+            <thead>
+                <tr>
+                    <th>Baby</th>
+                    <th>Mother</th>
+                    <th>Vaccine</th>
+                    <th>Phone</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="pendingReminderTable"></tbody>
+        </table>
+        <div id="pendingNoData" style="text-align: center; padding: 20px; color: #999; display: none;">
+            No pending vaccinations with sent reminders
+        </div>
+    </div>
+
+    <div>
+        <h3 style="background-color: #4CAF50; color: white; padding: 10px; border-radius: 4px;">Completed Vaccinations</h3>
+        <table border="1" width="100%" style="margin-top: 10px;">
+            <thead>
+                <tr>
+                    <th>Baby</th>
+                    <th>Mother</th>
+                    <th>Vaccine</th>
+                    <th>Phone</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="completedReminderTable"></tbody>
+        </table>
+        <div id="completedNoData" style="text-align: center; padding: 20px; color: #999; display: none;">
+            No completed vaccinations
+        </div>
+    </div>
+</div>
 
 <script src="js/script.js"></script>
 </body>

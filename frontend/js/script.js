@@ -90,7 +90,8 @@ const renderMotherSearchResults = (mother) => {
         button.addEventListener("click", () => {
             const babyId = button.getAttribute("data-baby-id");
             const babyName = button.closest("tr").querySelector("td").textContent;
-            fetchBabySchedule(babyId, babyName);
+            // Redirect to schedule-child.html with baby_id and baby_name parameters
+            window.location.href = `schedule-child.html?baby_id=${encodeURIComponent(babyId)}&baby_name=${encodeURIComponent(babyName)}`;
         });
     });
 };
@@ -368,9 +369,10 @@ if (scheduleTable) {
             data.forEach(row => {
                 scheduleTable.innerHTML += `
                     <tr>
-                        <td>${row.baby_name}</td>
+                        <td><a href="upcoming-vaccinations.html?baby_id=${encodeURIComponent(row.baby_id)}&baby_name=${encodeURIComponent(row.baby_name)}" style="cursor: pointer; color: #4CAF50; text-decoration: none; font-weight: bold;">${row.baby_name}</a></td>
+                        <td>${row.mother_name}</td>
                         <td>${row.vaccine_name}</td>
-                        <td>${row.due_date}</td>
+                        <td>${new Date(row.due_date).toLocaleDateString()}</td>
                         <td>${row.status}</td>
                     </tr>
                 `;
@@ -383,27 +385,80 @@ if (scheduleTable) {
 
 
 /*LOAD REMINDER */
-const reminderTable = document.getElementById("reminderTable");
+const pendingReminderTable = document.getElementById("pendingReminderTable");
+const completedReminderTable = document.getElementById("completedReminderTable");
+const pendingNoData = document.getElementById("pendingNoData");
+const completedNoData = document.getElementById("completedNoData");
 
-if (reminderTable) {
+if (pendingReminderTable || completedReminderTable) {
     fetch(`${API}/vaccines/reminders`)
         .then(res => res.json())
         .then(data => {
-            reminderTable.innerHTML = "";
+            if (!data || data.length === 0) {
+                if (pendingNoData) pendingNoData.style.display = "block";
+                if (completedNoData) completedNoData.style.display = "block";
+                return;
+            }
 
-            data.forEach(row => {
-                const sentDate = row.reminder_sent ? new Date(row.reminder_sent).toLocaleDateString() : "-";
-                const status = row.message_status || (row.reminder_sent ? "Sent" : "Pending");
-
-                reminderTable.innerHTML += `
-                    <tr>
-                        <td>${row.mother_name || "Unknown"}</td>
-                        <td>${row.phone_no || "-"}</td>
-                        <td>${sentDate}</td>
-                        <td>${status}</td>
-                    </tr>
-                `;
+            // Deduplicate by schedule_id - keep only the first occurrence of each vaccination
+            const seenScheduleIds = new Set();
+            const deduplicatedData = data.filter(row => {
+                if (seenScheduleIds.has(row.schedule_id)) {
+                    return false;
+                }
+                seenScheduleIds.add(row.schedule_id);
+                return true;
             });
+
+            // Separate data by vaccination status
+            const pending = deduplicatedData.filter(row => row.status !== "Completed");
+            const completed = deduplicatedData.filter(row => row.status === "Completed");
+
+            // Populate pending vaccinations table
+            if (pendingReminderTable) {
+                pendingReminderTable.innerHTML = "";
+                if (pending.length === 0) {
+                    pendingNoData.style.display = "block";
+                } else {
+                    pendingNoData.style.display = "none";
+                    pending.forEach(row => {
+                        const dueDate = row.due_date ? new Date(row.due_date).toLocaleDateString() : "-";
+                        pendingReminderTable.innerHTML += `
+                            <tr>
+                                <td><a href="schedule-child.html?baby_id=${encodeURIComponent(row.baby_id)}&baby_name=${encodeURIComponent(row.baby_name)}" style="cursor: pointer; color: #4CAF50; text-decoration: none; font-weight: bold;">${row.baby_name || "Unknown"}</a></td>
+                                <td>${row.mother_name || "Unknown"}</td>
+                                <td>${row.vaccine_name || "-"}</td>
+                                <td>${row.phone_no || "-"}</td>
+                                <td>${dueDate}</td>
+                                <td>${row.status || "-"}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            }
+
+            // Populate completed vaccinations table
+            if (completedReminderTable) {
+                completedReminderTable.innerHTML = "";
+                if (completed.length === 0) {
+                    completedNoData.style.display = "block";
+                } else {
+                    completedNoData.style.display = "none";
+                    completed.forEach(row => {
+                        const dueDate = row.due_date ? new Date(row.due_date).toLocaleDateString() : "-";
+                        completedReminderTable.innerHTML += `
+                            <tr>
+                                <td><a href="schedule-child.html?baby_id=${encodeURIComponent(row.baby_id)}&baby_name=${encodeURIComponent(row.baby_name)}" style="cursor: pointer; color: #4CAF50; text-decoration: none; font-weight: bold;">${row.baby_name || "Unknown"}</a></td>
+                                <td>${row.mother_name || "Unknown"}</td>
+                                <td>${row.vaccine_name || "-"}</td>
+                                <td>${row.phone_no || "-"}</td>
+                                <td>${dueDate}</td>
+                                <td>${row.status || "-"}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            }
         })
         .catch(() => {
             alert("Failed to load reminders");

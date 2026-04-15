@@ -37,6 +37,8 @@ router.get("/schedule/:baby_id", (req, res) => {
 router.get("/schedules", (req, res) => {
     const sql = `
         SELECT
+            vs.schedule_id,
+            b.baby_id,
             b.baby_name,
             m.mother_name,
             v.vaccine_name,
@@ -61,18 +63,28 @@ router.get("/schedules", (req, res) => {
     });
 });
 
-// GET SENT REMINDERS
+// GET SENT REMINDERS WITH VACCINATION STATUS
 router.get("/reminders", (req, res) => {
     const sql = `
         SELECT
-            rr.reminder_id,
+            vs.schedule_id,
+            vs.baby_id,
+            b.baby_name,
             m.mother_name,
-            rr.phone_no,
-            rr.reminder_sent,
+            m.phone_no,
+            v.vaccine_name,
+            vs.due_date,
+            vs.status,
+            vs.reminder_sent,
+            rr.reminder_sent as reminder_date,
             rr.message_status
-        FROM reminder_records rr
-        LEFT JOIN mothers m ON rr.mother_id = m.mother_id
-        ORDER BY rr.reminder_id DESC
+        FROM vaccination_schedule vs
+        JOIN babies b ON vs.baby_id = b.baby_id
+        JOIN mothers m ON b.mother_id = m.mother_id
+        JOIN vaccines v ON vs.vaccine_id = v.vaccine_id
+        LEFT JOIN reminder_records rr ON m.mother_id = rr.mother_id
+        WHERE vs.reminder_sent = 1
+        ORDER BY vs.status ASC, vs.due_date DESC
     `;
 
     db.query(sql, (err, results) => {

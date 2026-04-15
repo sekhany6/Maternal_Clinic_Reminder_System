@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db/connection");
 const bcrypt = require("bcrypt");
-
+const { validatePassword, validateEmail } = require("../utils/validation");
 
 // REGISTER STAFF
 router.post("/register", async (req, res) => {
@@ -19,6 +19,22 @@ router.post("/register", async (req, res) => {
     if (!staff_name || !email || !password || !role || !hospital_id) {
         return res.status(400).json({
             error: "Missing required fields. Please provide staff_name, email, password, role, and hospital_id."
+        });
+    }
+
+    // VALIDATE EMAIL
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.valid) {
+        return res.status(400).json({
+            error: emailValidation.error
+        });
+    }
+
+    // VALIDATE PASSWORD
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+        return res.status(400).json({
+            error: passwordValidation.error
         });
     }
 
@@ -96,6 +112,14 @@ router.post("/login", async (req, res) => {
                 error: "Incorrect password. Please try again."
             });
         }
+
+        // SET HASHED PASSWORD IN COOKIE (secure storage)
+        res.cookie('staffAuth', staff.password, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+            maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        });
 
         // SUCCESS
         res.json({

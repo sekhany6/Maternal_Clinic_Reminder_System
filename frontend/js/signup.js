@@ -1,5 +1,6 @@
 const API = "http://localhost:3000/api";
 const registerStaffForm = document.getElementById("registerStaffForm");
+const passwordToggleButtons = document.querySelectorAll(".password-toggle");
 
 // Password Validation
 const validatePassword = (password) => {
@@ -95,3 +96,17 @@ if (registerStaffForm) {
         }
     });
 }
+
+passwordToggleButtons.forEach(button => {
+    button.addEventListener("click", () => {
+        const targetId = button.getAttribute("data-password-target");
+        const targetInput = document.getElementById(targetId);
+        const wrapper = button.closest(".password-field");
+        if (!targetInput || !wrapper) return;
+
+        const isHidden = targetInput.type === "password";
+        targetInput.type = isHidden ? "text" : "password";
+        wrapper.classList.toggle("is-visible", isHidden);
+        button.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
+    });
+});

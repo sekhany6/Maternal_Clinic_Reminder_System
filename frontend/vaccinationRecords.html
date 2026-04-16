@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vaccination Records - Clinic Reminder</title>
+    <link rel="icon" type="image/png" href="../images/remindericon.png">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="login.html">Login</a>
+            <a href="index.html">Logout</a>
+        </nav>
+    </header>
+
+    <main class="reminders-container">
+        <button type="button" class="back-button page-back" onclick="window.history.back()" aria-label="Go back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6"></path>
+            </svg>
+        </button>
+
+        <section class="hero-panel">
+            <div class="hero-copy">
+                <span class="eyebrow">Reminder archive</span>
+                <h1>Track sent reminders and completed vaccinations</h1>
+                <p>This view helps the clinic compare families still awaiting vaccinations against children whose vaccine schedules have already been completed.</p>
+            </div>
+            <div class="hero-side">
+                <div class="hero-note">
+                    <strong>Pending with reminders</strong>
+                    These children have already received a message but still have vaccinations outstanding.
+                </div>
+                <div class="hero-note">
+                    <strong>Completed records</strong>
+                    Use the completed list to quickly confirm follow-through across the clinic.
+                </div>
+            </div>
+        </section>
+
+        <section class="section-stack">
+            <div class="reminder-grid">
+                <section class="table-card">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Pending after reminder</h2>
+                            <p>Children with sent reminders whose vaccinations are still not completed.</p>
+                        </div>
+                        <span class="pill pill-gold">Needs follow-up</span>
+                    </div>
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Baby</th>
+                                <th>Mother</th>
+                                <th>Vaccine</th>
+                                <th>Phone</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pendingReminderTable"></tbody>
+                    </table>
+                    <div id="pendingNoData" class="empty-state" style="display: none;">
+                        <strong>No pending vaccinations with sent reminders.</strong>
+                        <span>When reminder history exists, it will appear here.</span>
+                    </div>
+                </section>
+
+                <section class="table-card">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Completed vaccinations</h2>
+                            <p>Children whose vaccination records are already marked complete.</p>
+                        </div>
+                        <span class="pill pill-green">Completed</span>
+                    </div>
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Baby</th>
+                                <th>Mother</th>
+                                <th>Vaccine</th>
+                                <th>Phone</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="completedReminderTable"></tbody>
+                    </table>
+                    <div id="completedNoData" class="empty-state" style="display: none;">
+                        <strong>No completed vaccinations.</strong>
+                        <span>Completed records will appear here when available.</span>
+                    </div>
+                </section>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/script.js"></script>
+</body>
+</html>

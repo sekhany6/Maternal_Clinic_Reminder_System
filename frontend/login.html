@@ -1,31 +1,80 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Clinic Reminder</title>
+    <title>Login - Clinic Reminder</title>
     <link rel="icon" type="image/png" href="../images/remindericon.png">
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<header>    
- <nav> 
-    <a href="index.html">Logout</a>
-    <a href="index.html">Home</a>
-    <a href="login.html">Login</a>
- </nav> 
-</header>
 <body>
-  <h2>Log In</h2>
-  <form id="loginForm" >
-    <input type="email" id="email" name="email" placeholder="Email" required /><br />
-    <span id="emailError" class="error"></span>
-    <input type="password" id="password" name="password" placeholder="Password" required /><br />
-    <span id="passwordError" class="error"></span>
-    <button type="submit">Log In</button>
-  </form>
+    <header>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="signup.html">Sign Up</a>
+            <a href="login.html">Login</a>
+        </nav>
+    </header>
 
-  <p>Forgot your password? <a href="reset-password.html">Reset Password</a></p>
-  <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
+    <main class="auth-shell">
+        <button type="button" class="back-button page-back" onclick="window.history.back()" aria-label="Go back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6"></path>
+            </svg>
+        </button>
 
-<script src="js/login.js"></script>
+        <section class="auth-hero">
+            <span class="eyebrow">Staff access</span>
+            <h1>Welcome back to the clinic workspace</h1>
+            <p>Log in to manage family registrations, vaccination schedules, and reminder follow-up without losing context.</p>
 
+            <div class="info-stack">
+                <div class="hero-note">
+                    <strong>Need help?</strong>
+                    Use your registered staff email and password to continue into the dashboard.
+                </div>
+            </div>
+        </section>
+
+        <section class="auth-card">
+            <div class="page-intro">
+                <h2>Log in</h2>
+                <p>Enter your staff credentials below.</p>
+            </div>
+
+            <form id="loginForm" class="plain-form spaced-top">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="name@gmail.com" required>
+                <span id="emailError" class="error"></span>
+
+                <label for="password">Password</label>
+                <div class="password-field">
+                    <input type="password" id="password" name="password" placeholder="Password" required>
+                    <button type="button" class="icon-button password-toggle" data-password-target="password" aria-label="Show password">
+                        <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <svg class="eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M3 3l18 18"></path>
+                            <path d="M10.6 10.7a3 3 0 0 0 4.2 4.2"></path>
+                            <path d="M9.4 5.3A10.7 10.7 0 0 1 12 5c6.5 0 10 7 10 7a17.2 17.2 0 0 1-4 4.8"></path>
+                            <path d="M6.6 6.7A17.3 17.3 0 0 0 2 12s3.5 7 10 7a10.8 10.8 0 0 0 5.3-1.3"></path>
+                        </svg>
+                    </button>
+                </div>
+                <span id="passwordError" class="error"></span>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-submit full-width">Log in</button>
+                </div>
+            </form>
+
+            <div class="muted-links">
+                <a href="reset-password.html">Forgot your password? Reset it</a>
+                <a href="signup.html">Need an account? Sign up</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/login.js"></script>
 </body>
 </html>

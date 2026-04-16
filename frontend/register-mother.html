@@ -1,30 +1,81 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Clinic Reminder</title>
+    <title>Register Mother - Clinic Reminder</title>
     <link rel="icon" type="image/png" href="../images/remindericon.png">
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<header>    
- <nav> 
-    <a href="index.html">Logout</a>
-    <a href="index.html">Home</a>
-    <a href="login.html">Login</a>
-    <a href="dashboard.html">Dashboard</a>
- </nav>
-</header>
 <body>
-<h2>Register Mother</h2>
+    <header>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="register-baby.html">Register Baby</a>
+            <a href="schedules.html">Schedules</a>
+            <a href="index.html">Logout</a>
+        </nav>
+    </header>
 
-<form id="motherForm">
-    <input type="text" id="mother_name" placeholder="Mother Name" required>
-    <input type="text" id="phone_no" placeholder="Phone Number" required>
-    <input type="text" id="national_id" placeholder="National ID">
-    <input type="number" id="hospital_id" placeholder="Hospital ID" required>
+    <main class="page-shell">
+        <button type="button" class="back-button page-back" onclick="window.history.back()" aria-label="Go back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6"></path>
+            </svg>
+        </button>
 
-    <button type="submit">Register</button>
-</form>
+        <section class="hero-panel">
+            <div class="hero-copy">
+                <span class="eyebrow">Mother intake</span>
+                <h1>Register a mother</h1>
+                <p>Capture the core profile details needed to link future child records, schedules, and reminder history.</p>
+            </div>
+            <div class="hero-side">
+                <div class="hero-note">
+                    <strong>What happens next</strong>
+                    After registration, the workflow continues to baby registration using the saved phone number.
+                </div>
+            </div>
+        </section>
 
-<script src="js/script.js"></script>
+        <section class="section-stack">
+            <div class="split-layout">
+                <section class="stack-card">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Mother details</h2>
+                            <p>Enter the key identity and clinic reference details below.</p>
+                        </div>
+                    </div>
+
+                    <form id="motherForm" class="plain-form">
+                        <label for="mother_name">Mother name</label>
+                        <input type="text" id="mother_name" placeholder="Full name" required>
+
+                        <label for="phone_no">Phone number</label>
+                        <input type="text" id="phone_no" placeholder="Phone number" required>
+
+                        <label for="national_id">National ID</label>
+                        <input type="text" id="national_id" placeholder="National ID">
+
+                        <label for="hospital_id">Hospital ID</label>
+                        <input type="number" id="hospital_id" placeholder="Hospital ID" required>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-submit">Register mother</button>
+                        </div>
+                    </form>
+                </section>
+
+                <aside class="stack-card">
+                    <div class="support-copy">
+                        <h2>Registration notes</h2>
+                        <p>Use the same phone number the clinic will rely on for reminder delivery and parent follow-up.</p>
+                        <span class="pill pill-gold">Next: register child</span>
+                    </div>
+                </aside>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/script.js"></script>
 </body>
-</html> 
+</html>

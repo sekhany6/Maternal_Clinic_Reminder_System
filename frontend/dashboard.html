@@ -1,37 +1,125 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Clinic Reminder</title>
+    <title>Dashboard - Clinic Reminder</title>
     <link rel="icon" type="image/png" href="../images/remindericon.png">
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<header>    
- <nav> 
-    <a href="index.html">Logout</a>
-    <a href="index.html">Home</a>
-    <a href="login.html">Login</a>
- </nav>
-</header>
 <body>
-    <h1>Dashboard</h1>
+    <header>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="index.html">Logout</a>
+        </nav>
+    </header>
 
-    <section class="dashboard-search">
-        <h2>Find Mother and Child Schedule</h2>
-        <form id="motherSearchForm">
-            <input type="tel" id="motherSearchPhone" placeholder="Mother Phone Number" required>
-            <button type="submit">Search</button>
-        </form>
-        <div id="motherSearchResults"></div>
-    </section>
+    <main class="page-shell">
+        <button type="button" class="back-button page-back" onclick="window.history.back()" aria-label="Go back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6"></path>
+            </svg>
+        </button>
 
-    <div class="card-grid">
-        <a class="card" href="register-mother.html">Register Mother</a>
-        <a class="card" href="register-baby.html">Register Baby</a>
-        <a class="card" href="schedules.html">View Schedule</a>
-        <a class="card" href="reminders.html">View Reminders</a>
-        <a class="card" href="upcoming-vaccinations.html">Send Vaccination Messages</a>
-    </div>
+        <section class="hero-panel">
+            <div class="hero-copy">
+                <span class="eyebrow">Clinic operations</span>
+                <h1>Maternal clinic dashboard</h1>
+                <p>Move quickly between registration, vaccination schedules, and reminder follow-up from one place built for daily clinic work.</p>
+            </div>
+            <div class="hero-side">
+                <div class="hero-note">
+                    <strong>Fast lookup</strong>
+                    Search by mother phone number to jump straight into her registered children and each child’s schedule.
+                </div>
+                <div class="hero-note">
+                    <strong>Daily workflow</strong>
+                    Use the quick links below to register new records, review schedules, and send reminders.
+                </div>
+            </div>
+        </section>
+
+        <section class="section-stack">
+            <div class="split-layout">
+                <section class="stack-card">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Find mother and child schedule</h2>
+                            <p>Search the registry using the mother’s phone number.</p>
+                        </div>
+                        <span class="pill pill-blue">Quick search</span>
+                    </div>
+
+                    <form id="motherSearchForm" class="plain-form">
+                        <label for="motherSearchPhone">Mother phone number</label>
+                        <div class="input-with-action">
+                            <input type="tel" id="motherSearchPhone" placeholder="e.g. 0712345678" required>
+                            <button type="submit" class="icon-button search-trigger" aria-label="Search mother">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <circle cx="11" cy="11" r="7"></circle>
+                                    <path d="M20 20l-3.5-3.5"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="form-actions">
+                            <span class="inline-note">Search instantly by the mother's phone number.</span>
+                        </div>
+                    </form>
+                </section>
+
+                <aside class="stack-card">
+                    <div class="support-copy">
+                        <h2>Today’s rhythm</h2>
+                        <p>Search a family, confirm upcoming vaccines, and send reminders or update completion status without jumping between disconnected screens.</p>
+                        <span class="pill pill-green">Designed for follow-up</span>
+                    </div>
+                </aside>
+            </div>
+
+            <div id="motherSearchResults"></div>
+
+            <section>
+                <div class="section-heading">
+                    <div>
+                        <h2>Quick actions</h2>
+                        <p>Choose the next task in the clinic workflow.</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <a class="action-card" href="register-mother.html">
+                        <h3>Register mother</h3>
+                        <p>Add a mother’s details before linking children and vaccination schedules.</p>
+                        <span class="pill pill-gold">New record</span>
+                    </a>
+
+                    <a class="action-card" href="register-baby.html">
+                        <h3>Register baby</h3>
+                        <p>Create one or more child records and connect them to an existing mother.</p>
+                        <span class="pill pill-blue">Child intake</span>
+                    </a>
+
+                    <a class="action-card" href="schedules.html">
+                        <h3>View schedules</h3>
+                        <p>See upcoming vaccination schedules and open each child’s detailed record.</p>
+                        <span class="pill pill-green">Review list</span>
+                    </a>
+
+                    <a class="action-card" href="vaccinationRecords.html">
+                        <h3>Vaccination records</h3>
+                        <p>Track pending children who already received reminders and review completed vaccinations.</p>
+                        <span class="pill pill-gold">Follow-up</span>
+                    </a>
+
+                    <a class="action-card" href="upcoming-vaccinations.html">
+                        <h3>Send reminders</h3>
+                        <p>Preview and send vaccination messages for children due this month.</p>
+                        <span class="pill pill-green">Action center</span>
+                    </a>
+                </div>
+            </section>
+        </section>
+    </main>
 
     <script src="js/script.js"></script>
 </body>
-</html>     
+</html>

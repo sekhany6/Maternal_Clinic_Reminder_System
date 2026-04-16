@@ -1,51 +1,110 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Clinic Reminder</title>
+    <title>Staff Registration - Clinic Reminder</title>
     <link rel="icon" type="image/png" href="../images/remindericon.png">
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<header>    
- <nav> 
-    <a href="index.html">Logout</a>
-    <a href="index.html">Home</a>
-    <a href="login.html">Login</a>
- </nav> 
-</header>
 <body>
-<h2>Staff Registration</h2>
-<form id="registerStaffForm">
-    <label for="name">Name:</label><br>
-    <input type="text" id="name" name="name" required><br><br>
-    
-    <label for="email">Email:</label><br>
-    <input type="email" id="email" name="email" required><br>
-    <span id="emailError" class="error"></span><br>
-    
-    <label for="password">Password:</label><br>
-    <input type="password" id="password" name="password" required placeholder="Min 8 chars, with digit, capital letter, and special character"><br>
-    <span id="passwordError" class="error"></span><br>
+    <header>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="login.html">Login</a>
+            <a href="signup.html">Sign Up</a>
+        </nav>
+    </header>
 
-    <label for="confirm_password">Confirm Password:</label><br>
-    <input type="password" id="confirm_password" name="confirm_password" required><br><br>
+    <main class="auth-shell">
+        <button type="button" class="back-button page-back" onclick="window.history.back()" aria-label="Go back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6"></path>
+            </svg>
+        </button>
 
-    <label for="role">Role:</label><br>
-    <select id="role" name="role" required>
-        <option value="">Select role</option>
-        <option value="Doctor">Doctor</option>
-        <option value="Nurse">Nurse</option>
-        <option value="Receptionist">Receptionist</option>
-    </select><br><br>
+        <section class="auth-hero">
+            <span class="eyebrow">Staff onboarding</span>
+            <h1>Create a clinic staff account</h1>
+            <p>Register doctors, nurses, and reception staff with the details needed to access the reminder and schedule workflow.</p>
 
-    <label for="hospital_id">Hospital ID:</label><br>
-    <input type="number" id="hospital_id" name="hospital_id" required><br><br>
-    
-    <button type="submit">Register</button>
-</form>
+            <div class="info-stack">
+                <div class="hero-note">
+                    <strong>Password rules</strong>
+                    The current validation expects exactly 8 characters including a digit, a capital letter, and a special character.
+                </div>
+            </div>
+        </section>
 
-<p>Already have an account? <a href="login.html">Log In</a> </p>
+        <section class="auth-card">
+            <div class="page-intro">
+                <h2>Staff registration</h2>
+                <p>Complete the form below to create a new staff login.</p>
+            </div>
 
-<script src="js/signup.js"></script>
+            <form id="registerStaffForm" class="plain-form spaced-top">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required>
 
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required placeholder="name@gmail.com">
+                <span id="emailError" class="error"></span>
+
+                <label for="password">Password</label>
+                <div class="password-field">
+                    <input type="password" id="password" name="password" required placeholder="Exactly 8 chars with digit, capital, and symbol">
+                    <button type="button" class="icon-button password-toggle" data-password-target="password" aria-label="Show password">
+                        <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <svg class="eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M3 3l18 18"></path>
+                            <path d="M10.6 10.7a3 3 0 0 0 4.2 4.2"></path>
+                            <path d="M9.4 5.3A10.7 10.7 0 0 1 12 5c6.5 0 10 7 10 7a17.2 17.2 0 0 1-4 4.8"></path>
+                            <path d="M6.6 6.7A17.3 17.3 0 0 0 2 12s3.5 7 10 7a10.8 10.8 0 0 0 5.3-1.3"></path>
+                        </svg>
+                    </button>
+                </div>
+                <span id="passwordError" class="error"></span>
+
+                <label for="confirm_password">Confirm password</label>
+                <div class="password-field">
+                    <input type="password" id="confirm_password" name="confirm_password" required>
+                    <button type="button" class="icon-button password-toggle" data-password-target="confirm_password" aria-label="Show confirm password">
+                        <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <svg class="eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M3 3l18 18"></path>
+                            <path d="M10.6 10.7a3 3 0 0 0 4.2 4.2"></path>
+                            <path d="M9.4 5.3A10.7 10.7 0 0 1 12 5c6.5 0 10 7 10 7a17.2 17.2 0 0 1-4 4.8"></path>
+                            <path d="M6.6 6.7A17.3 17.3 0 0 0 2 12s3.5 7 10 7a10.8 10.8 0 0 0 5.3-1.3"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <label for="role">Role</label>
+                <select id="role" name="role" required>
+                    <option value="">Select role</option>
+                    <option value="Doctor">Doctor</option>
+                    <option value="Nurse">Nurse</option>
+                    <option value="Receptionist">Receptionist</option>
+                </select>
+
+                <label for="hospital_id">Hospital ID</label>
+                <input type="number" id="hospital_id" name="hospital_id" required>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-submit full-width">Register staff</button>
+                </div>
+            </form>
+
+            <div class="muted-links">
+                <a href="login.html">Already have an account? Log in</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/signup.js"></script>
 </body>
 </html>

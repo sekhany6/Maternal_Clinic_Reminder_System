@@ -13,6 +13,10 @@ const cancelBtn = document.getElementById("cancelBtn");
 const searchInput = document.getElementById("searchInput");
 const searchSection = document.getElementById("searchSection");
 const searchCount = document.getElementById("searchCount");
+const searchButton = document.getElementById("searchButton");
+const pendingCount = document.getElementById("pendingCount");
+const sentCount = document.getElementById("sentCount");
+const totalCount = document.getElementById("totalCount");
 
 // Get URL parameters for filtering
 const getURLParameters = () => {
@@ -83,6 +87,7 @@ const filterVaccinations = () => {
 
 // Add event listener to search input
 searchInput.addEventListener("input", filterVaccinations);
+searchButton?.addEventListener("click", filterVaccinations);
 
 // Clear search on focus
 searchInput.addEventListener("focus", () => {
@@ -125,34 +130,34 @@ const createTableRow = (item, isResend = false) => {
     const dueDate = new Date(item.due_date).toLocaleDateString();
     const buttonText = isResend ? "Resend Reminder" : "Send Reminder";
     
-    // Check if resend button should be disabled (only enable on or after due date)
-    let buttonDisabled = "";
-    let buttonTitle = "";
-    if (isResend) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const vaccDueDate = new Date(item.due_date);
-        vaccDueDate.setHours(0, 0, 0, 0);
-        if (today < vaccDueDate) {
-            buttonDisabled = "disabled";
-            buttonTitle = `title="Available on or after ${dueDate}"`;
-        }
-    }
-    
     row.innerHTML = `
-        <td>${item.baby_name}</td>
-        <td>${item.mother_name}</td>
-        <td>${item.phone_no}</td>
-        <td>${item.vaccine_name}</td>
-        <td>${dueDate}</td>
-        <td>${item.status}</td>
-        <td>
-            <button type="button" class="send-btn" onclick="openMessageModal(${item.schedule_id}, ${item.mother_id}, '${item.mother_name}', '${item.phone_no}', '${item.vaccine_name}', '${item.baby_name}', '${item.due_date}')" ${buttonDisabled} ${buttonTitle}>
+        <td data-label="Baby Name">${item.baby_name}</td>
+        <td data-label="Mother Name">${item.mother_name}</td>
+        <td data-label="Phone Number">${item.phone_no}</td>
+        <td data-label="Vaccine">${item.vaccine_name}</td>
+        <td data-label="Due Date">${dueDate}</td>
+        <td data-label="Status">${item.status}</td>
+        <td data-label="Action">
+            <button type="button" class="send-btn" onclick="openMessageModal(${item.schedule_id}, ${item.mother_id}, '${item.mother_name}', '${item.phone_no}', '${item.vaccine_name}', '${item.baby_name}', '${item.due_date}')">
                 ${buttonText}
             </button>
         </td>
     `;
     return row;
+};
+
+const updateDashboardCounts = () => {
+    if (pendingCount) {
+        pendingCount.textContent = pendingVaccinations.length;
+    }
+
+    if (sentCount) {
+        sentCount.textContent = sentVaccinations.length;
+    }
+
+    if (totalCount) {
+        totalCount.textContent = pendingVaccinations.length + sentVaccinations.length;
+    }
 };
 
 // Fetch and display upcoming vaccinations
@@ -216,9 +221,11 @@ const fetchUpcomingVaccinations = async () => {
             sentSection.style.display = "block";
         }
 
-        searchSection.style.display = "flex";
-        const totalCount = pendingVaccinations.length + sentVaccinations.length;
-        searchCount.textContent = `${totalCount} vaccination${totalCount !== 1 ? 's' : ''}`;
+        updateDashboardCounts();
+
+        searchSection.style.display = "block";
+        const totalVaccinations = pendingVaccinations.length + sentVaccinations.length;
+        searchCount.textContent = `${totalVaccinations} vaccination${totalVaccinations !== 1 ? 's' : ''}`;
         searchInput.value = ""; // Clear search input
 
     } catch (error) {

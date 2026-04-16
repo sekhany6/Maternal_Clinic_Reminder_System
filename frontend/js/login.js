@@ -1,14 +1,45 @@
 const API = "http://localhost:3000/api";
 const loginForm = document.getElementById("loginForm");
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const emailError = document.getElementById("emailError");
+const passwordError = document.getElementById("passwordError");
+const passwordToggleButtons = document.querySelectorAll(".password-toggle");
+
+function clearErrors() {
+    emailError.textContent = "";
+    passwordError.textContent = "";
+}
+
+function showError(field, message) {
+    if (field === "email") {
+        emailError.textContent = message;
+    } else if (field === "password") {
+        passwordError.textContent = message;
+    }
+}
 
 if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
         e.preventDefault();
+        clearErrors();
 
-        const data = {
-            email: document.getElementById("email").value,
-            password: document.getElementById("password").value
-        };
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        // Basic validation
+        if (!email) {
+            showError("email", "Email is required");
+            emailInput.focus();
+            return;
+        }
+        if (!password) {
+            showError("password", "Password is required");
+            passwordInput.focus();
+            return;
+        }
+
+        const data = { email, password };
 
         try {
             const res = await fetch(`${API}/staff/login`, {
@@ -20,15 +51,47 @@ if (loginForm) {
             const result = await res.json();
 
             if (res.ok) {
-                alert("Login successful");
                 localStorage.setItem("staff", JSON.stringify(result));
                 window.location.href = "dashboard.html";
             } else {
-                alert(result.message || "Login failed");
+                // Handle specific error cases
+                if (res.status === 404) {
+                    showError("email", "No account found with this email");
+                    emailInput.focus();
+                } else if (res.status === 401) {
+                    showError("password", "Incorrect password");
+                    passwordInput.focus();
+                } else if (res.status === 400) {
+                    showError("email", result.error || "Please check your inputs");
+                } else {
+                    showError("password", result.error || "Login failed. Please try again.");
+                }
             }
-
         } catch (error) {
-            alert("Error logging in");
+            console.error("Login error:", error);
+            showError("password", "Connection error. Please check your internet and try again.");
         }
     });
+
+    // Clear errors when user starts typing
+    emailInput?.addEventListener("input", () => {
+        emailError.textContent = "";
+    });
+    passwordInput?.addEventListener("input", () => {
+        passwordError.textContent = "";
+    });
 }
+
+passwordToggleButtons.forEach(button => {
+    button.addEventListener("click", () => {
+        const targetId = button.getAttribute("data-password-target");
+        const targetInput = document.getElementById(targetId);
+        const wrapper = button.closest(".password-field");
+        if (!targetInput || !wrapper) return;
+
+        const isHidden = targetInput.type === "password";
+        targetInput.type = isHidden ? "text" : "password";
+        wrapper.classList.toggle("is-visible", isHidden);
+        button.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
+    });
+});

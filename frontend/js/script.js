@@ -369,11 +369,11 @@ if (scheduleTable) {
             data.forEach(row => {
                 scheduleTable.innerHTML += `
                     <tr>
-                        <td><a href="upcoming-vaccinations.html?baby_id=${encodeURIComponent(row.baby_id)}&baby_name=${encodeURIComponent(row.baby_name)}" style="cursor: pointer; color: #4CAF50; text-decoration: none; font-weight: bold;">${row.baby_name}</a></td>
-                        <td>${row.mother_name}</td>
-                        <td>${row.vaccine_name}</td>
-                        <td>${new Date(row.due_date).toLocaleDateString()}</td>
-                        <td>${row.status}</td>
+                        <td data-label="Baby"><a class="table-link" href="upcoming-vaccinations.html?baby_id=${encodeURIComponent(row.baby_id)}&baby_name=${encodeURIComponent(row.baby_name)}">${row.baby_name}</a></td>
+                        <td data-label="Mother">${row.mother_name}</td>
+                        <td data-label="Vaccine">${row.vaccine_name}</td>
+                        <td data-label="Due Date">${new Date(row.due_date).toLocaleDateString()}</td>
+                        <td data-label="Status">${row.status}</td>
                     </tr>
                 `;
             });
@@ -425,12 +425,12 @@ if (pendingReminderTable || completedReminderTable) {
                         const dueDate = row.due_date ? new Date(row.due_date).toLocaleDateString() : "-";
                         pendingReminderTable.innerHTML += `
                             <tr>
-                                <td><a href="schedule-child.html?baby_id=${encodeURIComponent(row.baby_id)}&baby_name=${encodeURIComponent(row.baby_name)}" style="cursor: pointer; color: #4CAF50; text-decoration: none; font-weight: bold;">${row.baby_name || "Unknown"}</a></td>
-                                <td>${row.mother_name || "Unknown"}</td>
-                                <td>${row.vaccine_name || "-"}</td>
-                                <td>${row.phone_no || "-"}</td>
-                                <td>${dueDate}</td>
-                                <td>${row.status || "-"}</td>
+                                <td data-label="Baby"><a class="table-link" href="schedule-child.html?baby_id=${encodeURIComponent(row.baby_id)}&baby_name=${encodeURIComponent(row.baby_name)}">${row.baby_name || "Unknown"}</a></td>
+                                <td data-label="Mother">${row.mother_name || "Unknown"}</td>
+                                <td data-label="Vaccine">${row.vaccine_name || "-"}</td>
+                                <td data-label="Phone">${row.phone_no || "-"}</td>
+                                <td data-label="Due Date">${dueDate}</td>
+                                <td data-label="Status">${row.status || "-"}</td>
                             </tr>
                         `;
                     });
@@ -448,12 +448,12 @@ if (pendingReminderTable || completedReminderTable) {
                         const dueDate = row.due_date ? new Date(row.due_date).toLocaleDateString() : "-";
                         completedReminderTable.innerHTML += `
                             <tr>
-                                <td><a href="schedule-child.html?baby_id=${encodeURIComponent(row.baby_id)}&baby_name=${encodeURIComponent(row.baby_name)}" style="cursor: pointer; color: #4CAF50; text-decoration: none; font-weight: bold;">${row.baby_name || "Unknown"}</a></td>
-                                <td>${row.mother_name || "Unknown"}</td>
-                                <td>${row.vaccine_name || "-"}</td>
-                                <td>${row.phone_no || "-"}</td>
-                                <td>${dueDate}</td>
-                                <td>${row.status || "-"}</td>
+                                <td data-label="Baby"><a class="table-link" href="schedule-child.html?baby_id=${encodeURIComponent(row.baby_id)}&baby_name=${encodeURIComponent(row.baby_name)}">${row.baby_name || "Unknown"}</a></td>
+                                <td data-label="Mother">${row.mother_name || "Unknown"}</td>
+                                <td data-label="Vaccine">${row.vaccine_name || "-"}</td>
+                                <td data-label="Phone">${row.phone_no || "-"}</td>
+                                <td data-label="Due Date">${dueDate}</td>
+                                <td data-label="Status">${row.status || "-"}</td>
                             </tr>
                         `;
                     });

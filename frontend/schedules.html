@@ -1,35 +1,71 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Clinic Reminder</title>
+    <title>Schedules - Clinic Reminder</title>
     <link rel="icon" type="image/png" href="../images/remindericon.png">
     <link rel="stylesheet" href="css/styles.css">
-
 </head>
-<header>    
- <nav> 
-    <a href="index.html">Logout</a>
-    <a href="index.html">Home</a>
-    <a href="login.html">Login</a>
-    <a href="dashboard.html">Dashboard</a>
- </nav>
-</header>
 <body>
-<h2>Upcoming Vaccination Schedules</h2>
+    <header>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="upcoming-vaccinations.html">Upcoming</a>
+            <a href="vaccinationRecords.html">Vaccination Records</a>
+            <a href="index.html">Logout</a>
+        </nav>
+    </header>
 
-<table border="1">
-    <thead>
-        <tr>
-            <th>Baby</th>
-            <th>Mother</th>
-            <th>Vaccine</th>
-            <th>Due Date</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody id="scheduleTable"></tbody>
-</table>
+    <main class="page-shell">
+        <button type="button" class="back-button page-back" onclick="window.history.back()" aria-label="Go back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6"></path>
+            </svg>
+        </button>
 
-<script src="js/script.js"></script>
+        <section class="hero-panel">
+            <div class="hero-copy">
+                <span class="eyebrow">Schedule review</span>
+                <h1>Upcoming vaccination schedules for the week</h1>
+                <p>Browse the list of registered children, see upcoming vaccines for the week, and open an individual child schedule for reminders updates.</p>
+            </div>
+            <div class="hero-side">
+                <div class="hero-note">
+                    <strong>Direct navigation</strong>
+                    Selecting a child from the list opens the targeted vaccination view for that child.
+                </div>
+                <div class="hero-note">
+                    <strong>Clinic overview</strong>
+                    Use this list as the bridge between registration and reminder workflows.
+                </div>
+            </div>
+        </section>
+
+        <section class="section-stack">
+            <section class="table-card">
+                <div class="section-heading">
+                    <div>
+                        <h2>Schedule list</h2>
+                        <p>Each row shows the next relevant vaccine schedule record.</p>
+                    </div>
+                    <span class="pill pill-blue">Open child record</span>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Baby</th>
+                            <th>Mother</th>
+                            <th>Vaccine</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scheduleTable"></tbody>
+                </table>
+            </section>
+        </section>
+    </main>
+
+    <script src="js/script.js"></script>
 </body>
-</html> 
+</html>

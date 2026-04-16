@@ -1,33 +1,82 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Clinic Reminder</title>
+    <title>Register Baby - Clinic Reminder</title>
     <link rel="icon" type="image/png" href="../images/remindericon.png">
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<header>    
- <nav> 
-    <a href="index.html">Logout</a>
-    <a href="index.html">Home</a>
-    <a href="login.html">Login</a>
-    <a href="dashboard.html">Dashboard</a>
- </nav>
-</header>
 <body>
+    <header>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="register-mother.html">Register Mother</a>
+            <a href="schedules.html">Schedules</a>
+            <a href="index.html">Logout</a>
+        </nav>
+    </header>
 
-<h2>Register baby</h2>
+    <main class="page-shell">
+        <button type="button" class="back-button page-back" onclick="window.history.back()" aria-label="Go back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6"></path>
+            </svg>
+        </button>
 
-<form id="babyForm">
-    <div id="babyFieldsContainer"></div>
+        <section class="hero-panel">
+            <div class="hero-copy">
+                <span class="eyebrow">Child intake</span>
+                <h1>Register one or more babies</h1>
+                <p>Add child records for the selected mother, preview them as you build the list, and save them in one flow.</p>
+            </div>
+            <div class="hero-side">
+                <div class="hero-note">
+                    <strong>Multiple babies supported</strong>
+                    Add another baby entry whenever needed before submitting the registration.
+                </div>
+                <div class="hero-note">
+                    <strong>Linked to mother phone</strong>
+                    The mother's phone number connects the babies to the correct clinic record.
+                </div>
+            </div>
+        </section>
 
-    <button type="button" id="addBabyBtn">Add Another Baby</button>
+        <section class="section-stack">
+            <div class="split-layout">
+                <section class="stack-card">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Baby details</h2>
+                            <p>Create the child records that will power schedules and reminders.</p>
+                        </div>
+                    </div>
 
-    <div id="babyListPreview" class="baby-list-preview"></div>
+                    <form id="babyForm" class="plain-form">
+                        <div id="babyFieldsContainer"></div>
 
-    <input type="tel" id="mother_phone" placeholder="Mother Phone Number" required>
-    <button type="submit">Register Babies</button>
-</form>
+                        <button type="button" id="addBabyBtn">Add another baby</button>
 
-<script src="js/script.js"></script>
+                        <div id="babyListPreview" class="baby-list-preview"></div>
+
+                        <label for="mother_phone">Mother phone number</label>
+                        <input type="tel" id="mother_phone" placeholder="Mother phone number" required>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-submit">Register babies</button>
+                        </div>
+                    </form>
+                </section>
+
+                <aside class="stack-card">
+                    <div class="support-copy">
+                        <h2>Before you submit</h2>
+                        <p>Check the preview list to confirm names, birth dates, and gender entries for every child in this registration batch.</p>
+                        <span class="pill pill-blue">Review preview</span>
+                    </div>
+                </aside>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/script.js"></script>
 </body>
-</html> 
+</html>

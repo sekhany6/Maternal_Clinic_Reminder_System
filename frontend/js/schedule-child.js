@@ -114,10 +114,10 @@ const displayVaccinationSchedule = async (babyId) => {
             
             return `
                 <tr>
-                    <td>${item.vaccine_name}</td>
-                    <td>${dueDate}</td>
-                    <td>${item.status}</td>
-                    <td>
+                    <td data-label="Vaccine">${item.vaccine_name}</td>
+                    <td data-label="Due Date">${dueDate}</td>
+                    <td data-label="Status">${item.status}</td>
+                    <td data-label="Action">
                         <button type="button" class="complete-btn" onclick="markVaccinationComplete(${item.schedule_id}, '${item.vaccine_name}')" ${isEnabled ? "" : "disabled"} title="${isEnabled ? "Mark as complete" : "Available after due date"}">
                             Mark Complete
                         </button>
@@ -140,9 +140,9 @@ const displayVaccinationSchedule = async (babyId) => {
             const dueDate = new Date(item.due_date).toLocaleDateString();
             return `
                 <tr>
-                    <td>${item.vaccine_name}</td>
-                    <td>${dueDate}</td>
-                    <td>${item.status}</td>
+                    <td data-label="Vaccine">${item.vaccine_name}</td>
+                    <td data-label="Due Date">${dueDate}</td>
+                    <td data-label="Status">${item.status}</td>
                 </tr>
             `;
         }).join("");

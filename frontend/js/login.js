@@ -6,6 +6,11 @@ const emailError = document.getElementById("emailError");
 const passwordError = document.getElementById("passwordError");
 const passwordToggleButtons = document.querySelectorAll(".password-toggle");
 
+function validateEmailFormat(email) {
+    const gmailRegex = /^[a-zA-Z0-9_-]+@gmail\.com$/;
+    return gmailRegex.test(email);
+}
+
 function clearErrors() {
     emailError.textContent = "";
     passwordError.textContent = "";
@@ -33,6 +38,11 @@ if (loginForm) {
             emailInput.focus();
             return;
         }
+        if (!validateEmailFormat(email)) {
+            showError("email", "Email must be a valid Gmail address (e.g., user@gmail.com)");
+            emailInput.focus();
+            return;
+        }
         if (!password) {
             showError("password", "Password is required");
             passwordInput.focus();
@@ -56,13 +66,13 @@ if (loginForm) {
             } else {
                 // Handle specific error cases
                 if (res.status === 404) {
-                    showError("email", "No account found with this email");
+                    showError("email", "No staff account found with that email. Please register first.");
                     emailInput.focus();
                 } else if (res.status === 401) {
-                    showError("password", "Incorrect password");
+                    showError("password", "Incorrect password. Please try again.");
                     passwordInput.focus();
                 } else if (res.status === 400) {
-                    showError("email", result.error || "Please check your inputs");
+                    showError("email", result.error || "Please check your inputs.");
                 } else {
                     showError("password", result.error || "Login failed. Please try again.");
                 }

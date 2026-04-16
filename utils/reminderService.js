@@ -1,7 +1,6 @@
 const db = require("../db/connection");
-const sendSMS = require("./sendSMS");
+const { sendAndTrackSMS } = require("./sendSMS");
 
-// Promisify db.query so we can properly await all queries
 const queryAsync = (sql, params) => {
     return new Promise((resolve, reject) => {
         db.query(sql, params, (err, result) => {
@@ -11,20 +10,33 @@ const queryAsync = (sql, params) => {
     });
 };
 
-// Format phone number to international format for TextSMS 
 const formatPhone = (phone) => {
-    phone = phone.trim();
-    if (phone.startsWith("0")) {
-        return "254" + phone.slice(1); // Change 254 to your country code if needed
+    const normalizedPhone = phone.trim();
+
+    if (normalizedPhone.startsWith("0")) {
+        return `254${normalizedPhone.slice(1)}`;
     }
-    if (phone.startsWith("+254") && !phone.startsWith("+")) {
-        return phone.slice(1); // Remove the + if it exists, since TextSMS expects just the country code and number
+
+    if (normalizedPhone.startsWith("+254")) {
+        return normalizedPhone.slice(1);
     }
-    return phone;
+
+    return normalizedPhone;
+};
+
+const buildMessageStatus = (trackingResult) => {
+    const delivery = trackingResult.delivery || {};
+    const prefix = delivery.state === "delivered"
+        ? "Delivered"
+        : delivery.state === "failed"
+            ? "Not delivered"
+            : "Delivery pending";
+    const messageIdText = trackingResult.messageId ? ` [Message ID: ${trackingResult.messageId}]` : "";
+
+    return `${prefix}: ${delivery.description || trackingResult.responseDescription || "No provider description available."}${messageIdText}`;
 };
 
 const sendReminders = async () => {
-
     const sql = `
         SELECT 
             vs.schedule_id,
@@ -43,7 +55,6 @@ const sendReminders = async () => {
             AND DATEDIFF(vs.due_date, CURDATE()) = 3
     `;
 
-    // Use queryAsync for the main SELECT too, keeping code consistent
     const results = await queryAsync(sql, []);
 
     if (results.length === 0) {
@@ -54,31 +65,31 @@ const sendReminders = async () => {
     let failedCount = 0;
     const errors = [];
 
-    for (let row of results) {
-
+    for (const row of results) {
         try {
-
             const formattedPhone = formatPhone(row.phone_no);
-            console.log(`Formatted phone: ${formattedPhone}`); // should print 254111390052
-        
-
-
-            // Format due_date cleanly (removes time portion if present)
             const dueDate = new Date(row.due_date).toDateString();
-
             const smsMessage = `Hello ${row.mother_name}, your child ${row.baby_name} is due for ${row.vaccine_name} on ${dueDate}. Please visit the clinic.`;
+            const trackingResult = await sendAndTrackSMS(formattedPhone, smsMessage);
+            const messageStatus = buildMessageStatus(trackingResult);
 
-            // SEND SMS
-            await sendSMS(formattedPhone, smsMessage);
-
-            // Record the reminder as sent
             await queryAsync(`
-                 INSERT INTO reminder_records
-                 (mother_id, phone_no, reminder_sent, message_status)
-                 VALUES (?, ?, CURDATE(), 'Sent')
-                `, [row.mother_id, row.phone_no]);
+                INSERT INTO reminder_records
+                (mother_id, phone_no, reminder_sent, message_status)
+                VALUES (?, ?, CURDATE(), ?)
+            `, [row.mother_id, row.phone_no, messageStatus]);
 
-            // Await UPDATE so it completes before moving to the next row
+            if (!trackingResult.delivery?.delivered) {
+                failedCount++;
+                errors.push({
+                    mother: row.mother_name,
+                    phone: row.phone_no,
+                    error: trackingResult.delivery?.description || "SMS was accepted by the gateway but was not confirmed as delivered."
+                });
+                console.error(`Reminder not delivered to ${row.mother_name}:`, trackingResult.delivery?.description);
+                continue;
+            }
+
             await queryAsync(`
                 UPDATE vaccination_schedule
                 SET reminder_sent = 1
@@ -86,28 +97,24 @@ const sendReminders = async () => {
             `, [row.schedule_id]);
 
             successCount++;
-            console.log(` Reminder sent to ${row.mother_name} (${formattedPhone})`);
-
+            console.log(`Reminder delivered to ${row.mother_name} (${formattedPhone})`);
         } catch (error) {
-            // Don't stop the whole loop if one SMS fails; log and continue
             failedCount++;
             errors.push({
                 mother: row.mother_name,
                 phone: row.phone_no,
                 error: error.message
             });
-            console.error(`❌ Failed to send reminder to ${row.mother_name}:`, error.message);
+            console.error(`Failed to send reminder to ${row.mother_name}:`, error.message);
         }
-
     }
 
     return {
         message: "Reminder job completed",
         sent: successCount,
         failed: failedCount,
-        ...(errors.length > 0 && { errors }) // Only include errors array if there were failures
+        ...(errors.length > 0 && { errors })
     };
-
 };
 
 module.exports = sendReminders;

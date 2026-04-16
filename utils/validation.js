@@ -1,12 +1,12 @@
 // Password Validation
-// Requirements: 8 characters (min and max), must include digit, special character, and capital letter
+// Requirements: 8 to 10 characters, must include digit, special character, and capital letter
 const validatePassword = (password) => {
     if (!password) {
         return { valid: false, error: "Password is required" };
     }
 
-    if (password.length !== 8) {
-        return { valid: false, error: "Password must be exactly 8 characters long" };
+    if (password.length < 8 || password.length > 10) {
+        return { valid: false, error: "Password must be between 8 and 10 characters long" };
     }
 
     const hasDigit = /\d/.test(password);

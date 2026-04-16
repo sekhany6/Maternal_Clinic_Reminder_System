@@ -244,10 +244,66 @@ table {
     background: linear-gradient(180deg, #dcebff, #fbfdff);
 }
 
+.delivery-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+    color: var(--muted);
+    background: rgba(95, 126, 162, 0.1);
+    border: 1px solid rgba(95, 126, 162, 0.18);
+}
+
+.delivery-indicator.is-delivered {
+    color: #1f6f46;
+    background: rgba(51, 177, 107, 0.14);
+    border-color: rgba(51, 177, 107, 0.26);
+}
+
+.delivery-indicator.is-pending {
+    color: #7a5700;
+    background: rgba(241, 212, 136, 0.28);
+    border-color: rgba(214, 146, 32, 0.3);
+}
+
+.delivery-indicator.is-failed {
+    color: #8a2d21;
+    background: rgba(200, 91, 72, 0.14);
+    border-color: rgba(200, 91, 72, 0.26);
+}
+
 .section-stack {
     display: grid;
     gap: 22px;
     margin-top: 26px;
+}
+
+.report-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.form-group-inline {
+    display: grid;
+    gap: 8px;
+    min-width: 220px;
+}
+
+.report-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-left: auto;
+}
+
+.table-responsive {
+    overflow-x: auto;
 }
 
 .search-card,
@@ -488,6 +544,12 @@ tbody tr:hover {
     color: #82382c;
     background: #fbe7e2;
     border-color: #f0c8be;
+}
+
+.alert-warning {
+    color: #7a5700;
+    background: #fff1cc;
+    border-color: #f1d488;
 }
 
 .modal {

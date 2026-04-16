@@ -4,6 +4,13 @@ const db = require("../db/connection");
 const bcrypt = require("bcrypt");
 const { validatePassword, validateEmail } = require("../utils/validation");
 
+const authCookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "Strict",
+    path: "/"
+};
+
 // REGISTER STAFF
 router.post("/register", async (req, res) => {
 
@@ -114,10 +121,8 @@ router.post("/login", async (req, res) => {
         }
 
         // SET HASHED PASSWORD IN COOKIE (secure storage)
-        res.cookie('staffAuth', staff.password, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
+        res.cookie("staffAuth", staff.password, {
+            ...authCookieOptions,
             maxAge: 24 * 60 * 60 * 1000 // 24 hours
         });
 
@@ -140,4 +145,10 @@ router.post("/login", async (req, res) => {
     }
 
 });
+
+router.post("/logout", (req, res) => {
+    res.clearCookie("staffAuth", authCookieOptions);
+    res.json({ message: "Logout successful" });
+});
+
 module.exports = router;

@@ -2,9 +2,41 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db/connection");
 const sendReminders = require("../utils/reminderService");
-const sendSMS = require("../utils/sendSMS");
+const { sendAndTrackSMS } = require("../utils/sendSMS");
 
-// SIMPLE ROUTE
+const queryAsync = (sql, params = []) => new Promise((resolve, reject) => {
+    db.query(sql, params, (err, result) => {
+        if (err) return reject(err);
+        resolve(result);
+    });
+});
+
+const formatPhone = (phone) => {
+    const normalizedPhone = phone.trim();
+
+    if (normalizedPhone.startsWith("0")) {
+        return `254${normalizedPhone.slice(1)}`;
+    }
+
+    if (normalizedPhone.startsWith("+254")) {
+        return normalizedPhone.slice(1);
+    }
+
+    return normalizedPhone;
+};
+
+const buildMessageStatus = (trackingResult) => {
+    const delivery = trackingResult.delivery || {};
+    const prefix = delivery.state === "delivered"
+        ? "Delivered"
+        : delivery.state === "failed"
+            ? "Not delivered"
+            : "Delivery pending";
+    const messageIdText = trackingResult.messageId ? ` [Message ID: ${trackingResult.messageId}]` : "";
+
+    return `${prefix}: ${delivery.description || trackingResult.responseDescription || "No provider description available."}${messageIdText}`;
+};
+
 router.get("/send-reminders", async (req, res) => {
     try {
         const result = await sendReminders();
@@ -14,7 +46,6 @@ router.get("/send-reminders", async (req, res) => {
     }
 });
 
-// GET ALL PENDING VACCINATIONS FOR CURRENT MONTH (both sent and not sent reminders)
 router.get("/upcoming-vaccinations", (req, res) => {
     const sql = `
         SELECT
@@ -27,7 +58,15 @@ router.get("/upcoming-vaccinations", (req, res) => {
             v.vaccine_name,
             vs.due_date,
             vs.status,
-            vs.reminder_sent
+            vs.reminder_sent,
+            (
+                SELECT rr.message_status
+                FROM reminder_records rr
+                WHERE rr.mother_id = m.mother_id
+                  AND rr.phone_no = m.phone_no
+                ORDER BY rr.reminder_sent DESC
+                LIMIT 1
+            ) AS latest_message_status
         FROM vaccination_schedule vs
         JOIN babies b ON vs.baby_id = b.baby_id
         JOIN mothers m ON b.mother_id = m.mother_id
@@ -40,130 +79,88 @@ router.get("/upcoming-vaccinations", (req, res) => {
 
     db.query(sql, (err, results) => {
         if (err) {
-            console.error('Error fetching upcoming vaccinations:', err);
-            return res.status(500).json({ error: 'Unable to retrieve upcoming vaccinations' });
+            console.error("Error fetching upcoming vaccinations:", err);
+            return res.status(500).json({ error: "Unable to retrieve upcoming vaccinations" });
         }
 
         res.json(results);
     });
 });
 
-// FORMAT PHONE NUMBER TO INTERNATIONAL FORMAT  
-const formatPhone = (phone) => {
-    phone = phone.trim();
-    if (phone.startsWith("0")) {
-        return "254" + phone.slice(1);
-    }
-    if (phone.startsWith("+254")) {
-        return phone.slice(1);
-    }
-    return phone;
-};
-
-// SEND AUTOMATED VACCINATION REMINDER MESSAGE TO MOTHER
 router.post("/send-vaccination-reminder", async (req, res) => {
     try {
         const { schedule_id, mother_id, mother_name, phone_no, vaccine_name, baby_name, due_date } = req.body;
 
-        // Validate required fields
         if (!schedule_id || !mother_id || !phone_no || !vaccine_name || !baby_name || !due_date || !mother_name) {
             return res.status(400).json({
                 error: "Missing required fields: schedule_id, mother_id, mother_name, phone_no, vaccine_name, baby_name, and due_date"
             });
         }
 
-        // Format phone number
         const formattedPhone = formatPhone(phone_no);
-
-        // Format due_date cleanly
         const dueDate = new Date(due_date).toDateString();
-
-        // Construct automated message (same format as the automated system)
         const smsMessage = `Hello ${mother_name}, your child ${baby_name} is due for ${vaccine_name} on ${dueDate}. Please visit the clinic.`;
+        const trackingResult = await sendAndTrackSMS(formattedPhone, smsMessage);
+        const messageStatus = buildMessageStatus(trackingResult);
 
-        // Send SMS
-        const smsResult = await sendSMS(formattedPhone, smsMessage);
-
-        // Record the message in database
-        const recordSql = `
+        await queryAsync(`
             INSERT INTO reminder_records (mother_id, phone_no, reminder_sent, message_status)
-            VALUES (?, ?, NOW(), 'Sent')
-        `;
+            VALUES (?, ?, NOW(), ?)
+        `, [mother_id, phone_no, messageStatus]);
 
-        // Update vaccination_schedule to mark reminder as sent for THIS SPECIFIC VACCINATION
-        const updateScheduleSql = `
+        if (!trackingResult.delivery?.delivered) {
+            return res.status(trackingResult.delivery?.state === "failed" ? 502 : 202).json({
+                error: trackingResult.delivery?.state === "failed"
+                    ? "Reminder was accepted by the SMS gateway but was not delivered to the mother's phone."
+                    : "Reminder was accepted by the SMS gateway, but delivery to the mother's phone is still pending confirmation.",
+                details: trackingResult.delivery?.description || trackingResult.responseDescription,
+                deliveryState: trackingResult.delivery?.state || "pending",
+                messageId: trackingResult.messageId
+            });
+        }
+
+        await queryAsync(`
             UPDATE vaccination_schedule
             SET reminder_sent = 1
             WHERE schedule_id = ?
-        `;
+        `, [schedule_id]);
 
-        // Execute both queries
-        db.query(recordSql, [mother_id, phone_no], (err) => {
-            if (err) {
-                console.error("DB insert error:", err);
-            }
+        res.json({
+            message: "Vaccination reminder delivered successfully.",
+            deliveryState: trackingResult.delivery.state,
+            messageId: trackingResult.messageId
         });
-
-        db.query(updateScheduleSql, [schedule_id], (err) => {
-            if (err) {
-                console.error("DB update error:", err);
-                return res.json({
-                    message: "Vaccination reminder sent successfully",
-                    smsResult: smsResult,
-                    dbError: "Could not mark vaccination as sent"
-                });
-            }
-
-            res.json({
-                message: "Vaccination reminder sent successfully",
-                smsResult: smsResult
-            });
-        });
-
     } catch (error) {
         console.error("Send reminder error:", error);
         res.status(500).json({
-            error: "Failed to send reminder: " + error.message
+            error: `Failed to send reminder: ${error.message}`
         });
     }
 });
 
-// MARK VACCINATION AS COMPLETE
 router.post("/complete-vaccination", async (req, res) => {
     try {
         const { schedule_id } = req.body;
 
-        // Validate required fields
         if (!schedule_id) {
             return res.status(400).json({
                 error: "Missing required field: schedule_id"
             });
         }
 
-        // Update vaccination_schedule to mark status as Completed
-        const updateSql = `
+        await queryAsync(`
             UPDATE vaccination_schedule
             SET status = 'Completed'
             WHERE schedule_id = ?
-        `;
+        `, [schedule_id]);
 
-        db.query(updateSql, [schedule_id], (err) => {
-            if (err) {
-                console.error("DB update error:", err);
-                return res.status(500).json({
-                    error: "Failed to mark vaccination as complete"
-                });
-            }
-
-            res.json({
-                message: "Vaccination marked as complete successfully"
-            });
+        res.json({
+            message: "Vaccination marked as complete successfully"
         });
-
     } catch (error) {
         console.error("Complete vaccination error:", error);
         res.status(500).json({
-            error: "Failed to mark vaccination as complete: " + error.message
+            error: `Failed to mark vaccination as complete: ${error.message}`
         });
     }
 });

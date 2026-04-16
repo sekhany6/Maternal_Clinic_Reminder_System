@@ -124,11 +124,47 @@ const generateAutomatedMessage = (motherName, babyName, vaccineName, dueDate) =>
     return `Hello ${motherName}, your child ${babyName} is due for ${vaccineName} on ${formattedDate}. Please visit the clinic.`;
 };
 
+const getDeliveryBadge = (item) => {
+    const latestStatus = (item.latest_message_status || "").toLowerCase();
+
+    if (Number(item.reminder_sent) === 1 || latestStatus.startsWith("delivered:")) {
+        return {
+            className: "delivery-indicator is-delivered",
+            label: "Delivered",
+            title: item.latest_message_status || "Delivered to mother's phone"
+        };
+    }
+
+    if (latestStatus.startsWith("not delivered:")) {
+        return {
+            className: "delivery-indicator is-failed",
+            label: "Not Delivered",
+            title: item.latest_message_status
+        };
+    }
+
+    if (latestStatus.startsWith("delivery pending:")) {
+        return {
+            className: "delivery-indicator is-pending",
+            label: "Pending",
+            title: item.latest_message_status
+        };
+    }
+
+    return {
+        className: "delivery-indicator",
+        label: "Not Sent",
+        title: "No reminder has been sent for this vaccination yet."
+    };
+};
+
 // Create table row
 const createTableRow = (item, isResend = false) => {
     const row = document.createElement("tr");
     const dueDate = new Date(item.due_date).toLocaleDateString();
     const buttonText = isResend ? "Resend Reminder" : "Send Reminder";
+    const deliveryBadge = getDeliveryBadge(item);
+    const deliveryMarkup = `<span class="${deliveryBadge.className}" aria-label="${deliveryBadge.label}" title="${deliveryBadge.title}">${deliveryBadge.label}</span>`;
     
     row.innerHTML = `
         <td data-label="Baby Name">${item.baby_name}</td>
@@ -137,6 +173,7 @@ const createTableRow = (item, isResend = false) => {
         <td data-label="Vaccine">${item.vaccine_name}</td>
         <td data-label="Due Date">${dueDate}</td>
         <td data-label="Status">${item.status}</td>
+        <td data-label="Delivery">${deliveryMarkup}</td>
         <td data-label="Action">
             <button type="button" class="send-btn" onclick="openMessageModal(${item.schedule_id}, ${item.mother_id}, '${item.mother_name}', '${item.phone_no}', '${item.vaccine_name}', '${item.baby_name}', '${item.due_date}')">
                 ${buttonText}
@@ -285,15 +322,19 @@ messageForm.addEventListener("submit", async (e) => {
 
         const result = await res.json();
 
-        if (res.ok) {
-            showAlert("Vaccination reminder sent successfully!", "success");
+        if (res.ok && result.deliveryState === "delivered") {
+            showAlert(result.message || "Vaccination reminder delivered successfully!", "success");
             messageModal.style.display = "none";
-            // Refresh the table
             setTimeout(() => {
                 fetchUpcomingVaccinations();
             }, 1500);
+        } else if (res.status === 202) {
+            const details = result.details ? ` Details: ${result.details}` : "";
+            showAlert(`${result.error || "Delivery is still pending confirmation."}${details}`, "warning");
+            messageModal.style.display = "none";
         } else {
-            showAlert(result.error || "Failed to send reminder", "error");
+            const details = result.details ? ` Details: ${result.details}` : "";
+            showAlert(`${result.error || "Failed to send reminder"}${details}`, "error");
         }
 
     } catch (error) {
@@ -305,8 +346,7 @@ messageForm.addEventListener("submit", async (e) => {
 const showAlert = (message, type) => {
     alertBox.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
     
-    // Auto-hide success alerts after 5 seconds
-    if (type === "success") {
+    if (type !== "error") {
         setTimeout(() => {
             alertBox.innerHTML = "";
         }, 5000);

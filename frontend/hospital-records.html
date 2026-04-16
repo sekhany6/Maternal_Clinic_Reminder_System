@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hospital Records - Clinic Reminder</title>
+    <link rel="icon" type="image/png" href="../images/remindericon.png">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="vaccinationRecords.html">Vaccination Records</a>
+            <a href="index.html" class="logout-link">Logout</a>
+        </nav>
+    </header>
+
+    <main class="page-shell">
+        <button type="button" class="back-button page-back" onclick="window.history.back()" aria-label="Go back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6"></path>
+            </svg>
+        </button>
+
+        <section class="hero-panel">
+            <div class="hero-copy">
+                <span class="eyebrow">Monthly reporting</span>
+                <h1>Hospital records export</h1>
+                <p>Review monthly hospital totals and download a print-ready report for administration records.</p>
+            </div>
+            <div class="hero-side">
+                <div class="hero-note">
+                    <strong>What's included</strong>
+                    Hospital contacts, staff totals, registered mothers, registered children, and completed vaccinations for the selected month.
+                </div>
+            </div>
+        </section>
+
+        <section class="section-stack">
+            <section class="table-card">
+                <div class="section-heading">
+                    <div>
+                        <h2>Report controls</h2>
+                        <p>Select a month, load the report, then export it as PDF from the print dialog.</p>
+                    </div>
+                    <span class="pill pill-blue" id="reportMonthLabel">Current month</span>
+                </div>
+
+                <form id="hospitalReportForm" class="plain-form report-toolbar">
+                    <div class="form-group-inline">
+                        <label for="reportMonth">Month</label>
+                        <input type="month" id="reportMonth" required>
+                    </div>
+                    <div class="form-actions report-actions">
+                        <button type="submit" class="btn btn-submit">Load report</button>
+                        <button type="button" id="downloadPdfBtn" class="btn" disabled>Download PDF</button>
+                    </div>
+                </form>
+            </section>
+
+            <div id="reportAlert"></div>
+
+            <section class="stats-grid" id="reportSummary" style="display: none;">
+                <article class="stat-card stat-accent-blue">
+                    <span class="stat-label">Hospitals</span>
+                    <span class="stat-value" id="summaryHospitals">0</span>
+                </article>
+                <article class="stat-card stat-accent-gold">
+                    <span class="stat-label">Staff members</span>
+                    <span class="stat-value" id="summaryStaff">0</span>
+                </article>
+                <article class="stat-card stat-accent-green">
+                    <span class="stat-label">Registered mothers</span>
+                    <span class="stat-value" id="summaryMothers">0</span>
+                </article>
+                <article class="stat-card stat-accent-blue">
+                    <span class="stat-label">Registered children</span>
+                    <span class="stat-value" id="summaryChildren">0</span>
+                </article>
+                <article class="stat-card stat-accent-green">
+                    <span class="stat-label">Completed vaccinations</span>
+                    <span class="stat-value" id="summaryCompleted">0</span>
+                </article>
+            </section>
+
+            <section class="table-card">
+                <div class="section-heading">
+                    <div>
+                        <h2>Hospital monthly records</h2>
+                        <p>One row per hospital for the selected month.</p>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="vaccination-table">
+                        <thead>
+                            <tr>
+                                <th>Hospital</th>
+                                <th>Location</th>
+                                <th>Contact</th>
+                                <th>Staff</th>
+                                <th>Mothers</th>
+                                <th>Children</th>
+                                <th>Completed Vaccinations</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hospitalReportTable"></tbody>
+                    </table>
+                </div>
+
+                <div id="hospitalReportEmpty" class="empty-state" style="display: none;">
+                    <strong>No hospital records found.</strong>
+                    <span>Try another month or confirm the hospital data has been entered.</span>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <script src="js/logout.js"></script>
+    <script src="js/hospital-records.js"></script>
+</body>
+</html>

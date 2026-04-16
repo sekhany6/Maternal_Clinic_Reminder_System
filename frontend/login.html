@@ -42,12 +42,12 @@
 
             <form id="loginForm" class="plain-form spaced-top">
                 <label for="email">Email</label>
-                <input type="email" id="email" name="email" placeholder="name@gmail.com" required>
+                <input type="email" id="email" name="email" placeholder="name@gmail.com" required pattern="[A-Za-z0-9_-]+@gmail\.com" title="Use a Gmail address like user@gmail.com">
                 <span id="emailError" class="error"></span>
 
                 <label for="password">Password</label>
                 <div class="password-field">
-                    <input type="password" id="password" name="password" placeholder="Password" required>
+                    <input type="password" id="password" name="password" placeholder="Your 8-10 character password" required minlength="8" maxlength="10">
                     <button type="button" class="icon-button password-toggle" data-password-target="password" aria-label="Show password">
                         <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"></path>

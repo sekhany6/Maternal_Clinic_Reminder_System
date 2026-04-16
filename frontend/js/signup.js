@@ -5,9 +5,9 @@ const passwordToggleButtons = document.querySelectorAll(".password-toggle");
 // Password Validation
 const validatePassword = (password) => {
     const errors = [];
-    
-    if (password.length !== 8) {
-        errors.push("Password must be exactly 8 characters long");
+
+    if (password.length < 8 || password.length > 10) {
+        errors.push("Password must be between 8 and 10 characters long");
     }
     
     if (!/\d/.test(password)) {
@@ -42,8 +42,8 @@ if (registerStaffForm) {
         e.preventDefault();
         clearErrors();
 
-        const name = document.getElementById("name").value;
-        const email = document.getElementById("email").value;
+        const name = document.getElementById("name").value.trim();
+        const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value;
         const confirmPassword = document.getElementById("confirm_password").value;
         const role = document.getElementById("role").value;
@@ -51,7 +51,7 @@ if (registerStaffForm) {
 
         // Validate email
         if (!validateEmailFormat(email)) {
-            document.getElementById("emailError").textContent = "Email must be a valid Gmail address (user@gmail.com)";
+            document.getElementById("emailError").textContent = "Email must be a valid Gmail address (e.g., user@gmail.com)";
             return;
         }
 

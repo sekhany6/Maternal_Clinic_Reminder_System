@@ -1,5 +1,5 @@
 const db = require("../db/connection");
-const { sendAndTrackSMS } = require("./sendSMS");
+const { sendAndTrackSMS, buildDeliverySnapshot, logDeliveryReport } = require("./sendSMS");
 
 const queryAsync = (sql, params) => {
     return new Promise((resolve, reject) => {
@@ -22,18 +22,6 @@ const formatPhone = (phone) => {
     }
 
     return normalizedPhone;
-};
-
-const buildMessageStatus = (trackingResult) => {
-    const delivery = trackingResult.delivery || {};
-    const prefix = delivery.state === "delivered"
-        ? "Delivered"
-        : delivery.state === "failed"
-            ? "Not delivered"
-            : "Delivery pending";
-    const messageIdText = trackingResult.messageId ? ` [Message ID: ${trackingResult.messageId}]` : "";
-
-    return `${prefix}: ${delivery.description || trackingResult.responseDescription || "No provider description available."}${messageIdText}`;
 };
 
 const sendReminders = async () => {
@@ -71,22 +59,32 @@ const sendReminders = async () => {
             const dueDate = new Date(row.due_date).toDateString();
             const smsMessage = `Hello ${row.mother_name}, your child ${row.baby_name} is due for ${row.vaccine_name} on ${dueDate}. Please visit the clinic.`;
             const trackingResult = await sendAndTrackSMS(formattedPhone, smsMessage);
-            const messageStatus = buildMessageStatus(trackingResult);
+            const deliverySnapshot = buildDeliverySnapshot(trackingResult);
+
+            logDeliveryReport(`Reminder for ${row.mother_name} (${formattedPhone})`, trackingResult);
 
             await queryAsync(`
                 INSERT INTO reminder_records
-                (mother_id, phone_no, reminder_sent, message_status)
-                VALUES (?, ?, CURDATE(), ?)
-            `, [row.mother_id, row.phone_no, messageStatus]);
+                (mother_id, phone_no, reminder_sent, message_status, message_id, delivery_state, provider_description, last_checked_at)
+                VALUES (?, ?, CURDATE(), ?, ?, ?, ?, ?)
+            `, [
+                row.mother_id,
+                row.phone_no,
+                deliverySnapshot.messageStatus,
+                deliverySnapshot.messageId,
+                deliverySnapshot.deliveryState,
+                deliverySnapshot.providerDescription,
+                deliverySnapshot.lastCheckedAt
+            ]);
 
             if (!trackingResult.delivery?.delivered) {
                 failedCount++;
                 errors.push({
                     mother: row.mother_name,
                     phone: row.phone_no,
-                    error: trackingResult.delivery?.description || "SMS was accepted by the gateway but was not confirmed as delivered."
+                    error: deliverySnapshot.providerDescription
                 });
-                console.error(`Reminder not delivered to ${row.mother_name}:`, trackingResult.delivery?.description);
+                console.error(`Reminder delivery not complete for ${row.mother_name}:`, deliverySnapshot.messageStatus);
                 continue;
             }
 

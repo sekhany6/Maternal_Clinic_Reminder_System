@@ -179,8 +179,44 @@ const getDeliveryReport = async (messageId) => {
     return {
         messageId,
         ...status,
+        checkedAt: new Date().toISOString(),
         raw: result
     };
+};
+
+const buildDeliverySnapshot = (trackingResult) => {
+    const delivery = trackingResult.delivery || {};
+    const messageId = trackingResult.messageId || delivery.messageId || null;
+    const deliveryState = delivery.state || "pending";
+    const providerDescription = delivery.description
+        || trackingResult.responseDescription
+        || "No provider description available.";
+    const statusLabel = deliveryState === "delivered"
+        ? "Delivered"
+        : deliveryState === "failed"
+            ? "Not delivered"
+            : "Delivery pending";
+    const messageStatus = `${statusLabel}: ${providerDescription}${messageId ? ` [Message ID: ${messageId}]` : ""}`;
+
+    return {
+        messageId,
+        deliveryState,
+        providerDescription,
+        messageStatus,
+        lastCheckedAt: delivery.checkedAt || new Date().toISOString()
+    };
+};
+
+const logDeliveryReport = (contextLabel, trackingResult) => {
+    const snapshot = buildDeliverySnapshot(trackingResult);
+    const providerCode = trackingResult.delivery?.code ?? trackingResult.responseCode ?? "n/a";
+
+    console.log(`[TextSMS] ${contextLabel}`);
+    console.log(`  Message ID: ${snapshot.messageId || "not returned"}`);
+    console.log(`  Delivery state: ${snapshot.deliveryState}`);
+    console.log(`  Provider code: ${providerCode}`);
+    console.log(`  Provider description: ${snapshot.providerDescription}`);
+    console.log(`  Last checked: ${snapshot.lastCheckedAt}`);
 };
 
 const sendAndTrackSMS = async (phone, message) => {
@@ -224,7 +260,9 @@ const sendAndTrackSMS = async (phone, message) => {
 };
 
 module.exports = {
+    buildDeliverySnapshot,
     sendSMS,
     getDeliveryReport,
+    logDeliveryReport,
     sendAndTrackSMS
 };

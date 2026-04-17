@@ -30,7 +30,7 @@
             <div class="hero-side">
                 <div class="hero-note">
                     <strong>What's included</strong>
-                    Hospital contacts, staff totals, registered mothers, registered children, and completed vaccinations for the selected month.
+                    Hospital details, staff names and roles, mothers with their registered children, and monthly vaccination activity with completed and pending totals.
                 </div>
             </div>
         </section>
@@ -80,13 +80,17 @@
                     <span class="stat-label">Completed vaccinations</span>
                     <span class="stat-value" id="summaryCompleted">0</span>
                 </article>
+                <article class="stat-card stat-accent-gold">
+                    <span class="stat-label">Pending vaccinations</span>
+                    <span class="stat-value" id="summaryPending">0</span>
+                </article>
             </section>
 
             <section class="table-card">
                 <div class="section-heading">
                     <div>
                         <h2>Hospital monthly records</h2>
-                        <p>One row per hospital for the selected month.</p>
+                        <p>Overview totals per hospital for the selected month.</p>
                     </div>
                 </div>
 
@@ -101,6 +105,7 @@
                                 <th>Mothers</th>
                                 <th>Children</th>
                                 <th>Completed Vaccinations</th>
+                                <th>Pending Vaccinations</th>
                             </tr>
                         </thead>
                         <tbody id="hospitalReportTable"></tbody>
@@ -112,6 +117,8 @@
                     <span>Try another month or confirm the hospital data has been entered.</span>
                 </div>
             </section>
+
+            <section class="section-stack" id="hospitalDetailRecords"></section>
         </section>
     </main>
 

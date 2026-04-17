@@ -76,13 +76,26 @@ router.get("/reminders", (req, res) => {
             vs.due_date,
             vs.status,
             vs.reminder_sent,
-            rr.reminder_sent as reminder_date,
-            rr.message_status
+            latest_rr.reminder_id,
+            latest_rr.reminder_sent AS reminder_date,
+            latest_rr.message_status,
+            latest_rr.message_id,
+            latest_rr.delivery_state,
+            latest_rr.provider_description,
+            latest_rr.last_checked_at
         FROM vaccination_schedule vs
         JOIN babies b ON vs.baby_id = b.baby_id
         JOIN mothers m ON b.mother_id = m.mother_id
         JOIN vaccines v ON vs.vaccine_id = v.vaccine_id
-        LEFT JOIN reminder_records rr ON m.mother_id = rr.mother_id
+        LEFT JOIN (
+            SELECT rr1.*
+            FROM reminder_records rr1
+            INNER JOIN (
+                SELECT mother_id, phone_no, MAX(reminder_id) AS latest_reminder_id
+                FROM reminder_records
+                GROUP BY mother_id, phone_no
+            ) rr2 ON rr2.latest_reminder_id = rr1.reminder_id
+        ) latest_rr ON latest_rr.mother_id = m.mother_id AND latest_rr.phone_no = m.phone_no
         WHERE vs.reminder_sent = 1
         ORDER BY vs.status ASC, vs.due_date DESC
     `;
@@ -108,22 +121,21 @@ router.post("/record", (req, res) => {
         vaccination_date
     } = req.body;
 
-    const sql = `
-        INSERT INTO vaccination_records
-        (baby_id, vaccine_id, vaccination_date, status)
-        VALUES (?, ?, ?, 'Completed')
+    const existingRecordSql = `
+        SELECT record_id
+        FROM vaccination_records
+        WHERE baby_id = ? AND vaccine_id = ?
+        ORDER BY vaccination_date DESC, record_id DESC
+        LIMIT 1
     `;
 
-    db.query(sql,
-        [baby_id, vaccine_id, vaccination_date],
-        (err, result) => {
+    db.query(existingRecordSql, [baby_id, vaccine_id], (lookupErr, existingResults) => {
+        if (lookupErr) {
+            console.error('Error checking existing vaccination record:', lookupErr);
+            return res.status(500).json({ error: "Failed to verify existing vaccination records." });
+        }
 
-            if (err) {
-                console.error('Error recording vaccination:', err);
-                return res.status(500).json({ error: "Failed to record the vaccination. Please ensure the baby and vaccine IDs are correct and the vaccination hasn't been recorded already." });
-            }
-
-            // UPDATE SCHEDULE
+        const persistSchedule = (message) => {
             const updateSchedule = `
                 UPDATE vaccination_schedule
                 SET status='Completed', completed_date=?
@@ -131,16 +143,35 @@ router.post("/record", (req, res) => {
             `;
 
             db.query(updateSchedule,
-                [vaccination_date, baby_id, vaccine_id], (err) => {
-                    if (err) {
-                        console.error('Error updating vaccination schedule:', err);
+                [vaccination_date, baby_id, vaccine_id], (updateErr) => {
+                    if (updateErr) {
+                        console.error('Error updating vaccination schedule:', updateErr);
                         return res.status(500).json({ error: "Vaccination recorded but failed to update the schedule status. Please contact support." });
                     }
-                    res.json({
-                        message: "Vaccination recorded successfully"
-                    });
+                    res.json({ message });
                 });
+        };
 
-        });
+        if (existingResults.length) {
+            return persistSchedule("Vaccination record already existed and schedule was synced successfully");
+        }
+
+        const sql = `
+            INSERT INTO vaccination_records
+            (baby_id, vaccine_id, vaccination_date, status)
+            VALUES (?, ?, ?, 'Completed')
+        `;
+
+        db.query(sql,
+            [baby_id, vaccine_id, vaccination_date],
+            (err) => {
+                if (err) {
+                    console.error('Error recording vaccination:', err);
+                    return res.status(500).json({ error: "Failed to record the vaccination. Please ensure the baby and vaccine IDs are correct and the vaccination hasn't been recorded already." });
+                }
+
+                persistSchedule("Vaccination recorded successfully");
+            });
+    });
 
 });

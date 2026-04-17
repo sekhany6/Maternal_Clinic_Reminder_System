@@ -312,6 +312,124 @@ table {
     margin-left: auto;
 }
 
+.hospital-detail-card {
+    padding: 24px;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.detail-panel {
+    display: grid;
+    gap: 14px;
+    padding: 18px;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.68);
+    border: 1px solid var(--line);
+}
+
+.detail-panel-header {
+    display: grid;
+    gap: 4px;
+}
+
+.detail-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.detail-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.detail-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: var(--blue-soft);
+    color: var(--brand-deep);
+    border: 1px solid rgba(93, 159, 228, 0.24);
+}
+
+.detail-chip strong {
+    color: var(--ink);
+}
+
+.detail-stats {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.detail-stat {
+    min-width: 120px;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    background: var(--surface-soft);
+    border: 1px solid var(--line);
+}
+
+.detail-stat span {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--muted);
+    font-size: 0.88rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.detail-stat strong {
+    font-size: 1.5rem;
+    color: var(--brand-deep);
+}
+
+.detail-list-entry {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.detail-list-entry:last-child {
+    margin-bottom: 0;
+}
+
+.compact-empty {
+    padding: 18px;
+}
+
+.report-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+.report-status.is-complete {
+    color: #1f6f46;
+    background: rgba(51, 177, 107, 0.14);
+    border: 1px solid rgba(51, 177, 107, 0.24);
+}
+
+.report-status.is-pending {
+    color: #7a5700;
+    background: rgba(241, 212, 136, 0.28);
+    border: 1px solid rgba(214, 146, 32, 0.3);
+}
+
 .table-responsive {
     overflow-x: auto;
 }
@@ -1028,6 +1146,10 @@ tbody tr:hover {
     form,
     .modal-content {
         padding: 18px;
+    }
+
+    .detail-metrics {
+        justify-content: flex-start;
     }
 
     thead {

@@ -154,6 +154,16 @@ main,
     gap: 14px;
 }
 
+.hero-meta {
+    display: inline-flex;
+    width: fit-content;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+    font-weight: 700;
+}
+
 .eyebrow {
     display: inline-flex;
     width: fit-content;
@@ -665,6 +675,19 @@ tbody tr:hover {
 .children-list,
 .baby-list-preview {
     margin-top: 18px;
+}
+
+.table-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.secondary-btn {
+    background: linear-gradient(135deg, #eef6ff, #d7e9ff);
+    color: var(--brand-deep);
+    border: 1px solid rgba(93, 159, 228, 0.22);
+    box-shadow: 0 8px 18px rgba(93, 159, 228, 0.12);
 }
 
 .baby-list-preview {

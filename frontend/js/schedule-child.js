@@ -114,11 +114,11 @@ const displayVaccinationSchedule = async (babyId) => {
             
             return `
                 <tr>
-                    <td data-label="Vaccine">${item.vaccine_name}</td>
+                    <td data-label="Vaccine"><a class="table-link" href="${getReminderLink(item.schedule_id)}" title="Open this vaccine in upcoming reminders">${escapeHtml(item.vaccine_name)}</a></td>
                     <td data-label="Due Date">${dueDate}</td>
                     <td data-label="Status">${item.status}</td>
                     <td data-label="Action">
-                        <button type="button" class="complete-btn" onclick="markVaccinationComplete(${item.schedule_id}, '${item.vaccine_name}')" ${isEnabled ? "" : "disabled"} title="${isEnabled ? "Mark as complete" : "Available after due date"}">
+                        <button type="button" class="complete-btn" onclick="markVaccinationComplete(${item.schedule_id}, ${escapeHtml(JSON.stringify(item.vaccine_name))})" ${isEnabled ? "" : "disabled"} title="${isEnabled ? "Mark as complete" : "Available after due date"}">
                             Mark Complete
                         </button>
                     </td>
@@ -140,13 +140,51 @@ const displayVaccinationSchedule = async (babyId) => {
             const dueDate = new Date(item.due_date).toLocaleDateString();
             return `
                 <tr>
-                    <td data-label="Vaccine">${item.vaccine_name}</td>
+                    <td data-label="Vaccine"><a class="table-link" href="${getReminderLink(item.schedule_id)}" title="Open this vaccine in upcoming reminders">${escapeHtml(item.vaccine_name)}</a></td>
                     <td data-label="Due Date">${dueDate}</td>
                     <td data-label="Status">${item.status}</td>
                 </tr>
             `;
         }).join("");
     }
+};
+
+const formatDate = (value) => {
+    if (!value) {
+        return "Unknown";
+    }
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "Unknown" : date.toLocaleDateString();
+};
+
+const escapeHtml = (value) => String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+const getReminderLink = (scheduleId) => {
+    const { babyId, babyName } = getURLParameters();
+    const params = new URLSearchParams({
+        schedule_id: scheduleId,
+        baby_id: babyId,
+        baby_name: babyName || ""
+    });
+
+    return `upcoming-vaccinations.html?${params.toString()}`;
+};
+
+const fetchBabyDetails = async (babyId) => {
+    const res = await fetch(`${API}/babies/${encodeURIComponent(babyId)}`);
+    const data = await res.json();
+
+    if (!res.ok) {
+        throw new Error(data.error || "Failed to fetch baby details");
+    }
+
+    return data;
 };
 
 // Initialize page
@@ -158,9 +196,16 @@ window.addEventListener("DOMContentLoaded", async () => {
         return;
     }
 
-    // Set the baby name in header
     document.getElementById("babyNameHeader").textContent = `Vaccination Schedule for ${decodeURIComponent(babyName)}`;
 
-    // Fetch and display the schedule
+    try {
+        const baby = await fetchBabyDetails(babyId);
+        document.getElementById("babyNameHeader").textContent = `Vaccination Schedule for ${baby.baby_name}`;
+        document.getElementById("babyMeta").textContent = `Date of birth: ${formatDate(baby.date_of_birth)}`;
+    } catch (error) {
+        document.getElementById("babyMeta").textContent = "Date of birth: Unavailable";
+        showAlert(error.message, "error");
+    }
+
     await displayVaccinationSchedule(babyId);
 });

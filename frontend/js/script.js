@@ -9,6 +9,159 @@ const isValidPhone = (phone) => {
 const motherSearchForm = document.getElementById("motherSearchForm");
 const motherSearchPhone = document.getElementById("motherSearchPhone");
 const motherSearchResults = document.getElementById("motherSearchResults");
+let currentMotherSearchResult = null;
+
+const showInlineAlert = (containerId, message, type = "success") => {
+    const container = document.getElementById(containerId);
+    if (!container) {
+        return;
+    }
+
+    const normalizedType = type === "error" ? "error" : "success";
+    container.innerHTML = `<div class="alert ${normalizedType}">${message}</div>`;
+
+    window.setTimeout(() => {
+        if (container.innerHTML.includes(message)) {
+            container.innerHTML = "";
+        }
+    }, 5000);
+};
+
+const formatDate = (value) => {
+    if (!value) {
+        return "-";
+    }
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
+};
+
+const toDateInputValue = (value) => {
+    if (!value) {
+        return "";
+    }
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "" : date.toISOString().slice(0, 10);
+};
+
+const ensureBabyEditModal = () => {
+    if (document.getElementById("babyEditModal")) {
+        return;
+    }
+
+    document.body.insertAdjacentHTML("beforeend", `
+        <div id="babyEditModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h2>Edit child details</h2>
+                        <p>Update the child's record and refresh pending vaccination due dates if the birth date changes.</p>
+                    </div>
+                    <button type="button" class="close" aria-label="Close edit modal">&times;</button>
+                </div>
+                <div id="babyEditAlert"></div>
+                <form id="babyEditForm" class="plain-form">
+                    <input type="hidden" id="editBabyId">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="editBabyName">Child name</label>
+                            <input type="text" id="editBabyName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editBabyDob">Date of birth</label>
+                            <input type="date" id="editBabyDob" required>
+                        </div>
+                        <div class="form-group form-group-full">
+                            <label for="editBabyGender">Gender</label>
+                            <select id="editBabyGender" required>
+                                <option value="">Select gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" id="cancelBabyEdit" class="btn-cancel">Cancel</button>
+                        <button type="submit" class="btn-submit">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `);
+
+    if (!document.getElementById("motherSearchAlert")) {
+        motherSearchResults?.insertAdjacentHTML("beforebegin", `<div id="motherSearchAlert"></div>`);
+    }
+
+    const modal = document.getElementById("babyEditModal");
+    const closeButton = modal.querySelector(".close");
+    const cancelButton = document.getElementById("cancelBabyEdit");
+
+    const closeModal = () => {
+        modal.style.display = "none";
+        document.getElementById("babyEditAlert").innerHTML = "";
+    };
+
+    closeButton.addEventListener("click", closeModal);
+    cancelButton.addEventListener("click", closeModal);
+    window.addEventListener("click", (event) => {
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+
+    document.getElementById("babyEditForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const babyId = document.getElementById("editBabyId").value;
+        const payload = {
+            baby_name: document.getElementById("editBabyName").value.trim(),
+            date_of_birth: document.getElementById("editBabyDob").value,
+            gender: document.getElementById("editBabyGender").value
+        };
+
+        try {
+            const res = await fetch(`${API}/babies/${encodeURIComponent(babyId)}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+
+            if (!res.ok) {
+                throw new Error(result.error || "Failed to update child details.");
+            }
+
+            const updatedChildren = (currentMotherSearchResult?.children || []).map(child =>
+                String(child.baby_id) === String(babyId)
+                    ? { ...child, ...payload, baby_id: child.baby_id }
+                    : child
+            );
+
+            currentMotherSearchResult = {
+                ...currentMotherSearchResult,
+                children: updatedChildren
+            };
+
+            renderMotherSearchResults(currentMotherSearchResult);
+            closeModal();
+            showInlineAlert("motherSearchAlert", result.message || "Child details updated successfully.", "success");
+        } catch (error) {
+            showInlineAlert("babyEditAlert", error.message, "error");
+        }
+    });
+};
+
+const openBabyEditModal = (child) => {
+    ensureBabyEditModal();
+    document.getElementById("editBabyId").value = child.baby_id;
+    document.getElementById("editBabyName").value = child.baby_name || "";
+    document.getElementById("editBabyDob").value = toDateInputValue(child.date_of_birth);
+    document.getElementById("editBabyGender").value = child.gender || "";
+    document.getElementById("babyEditAlert").innerHTML = "";
+    document.getElementById("babyEditModal").style.display = "block";
+};
 
 const closeSearchResults = () => {
     if (motherSearchResults) {
@@ -17,6 +170,8 @@ const closeSearchResults = () => {
 };
 
 const renderMotherSearchResults = (mother) => {
+    currentMotherSearchResult = mother;
+
     if (!mother) {
         motherSearchResults.innerHTML = `
             <div class="search-results-panel">
@@ -33,8 +188,13 @@ const renderMotherSearchResults = (mother) => {
             <tr class="child-row" data-baby-id="${child.baby_id}">
                 <td>${child.baby_name}</td>
                 <td>${child.gender}</td>
-                <td>${child.date_of_birth}</td>
-                <td><button type="button" data-baby-id="${child.baby_id}">View Schedule</button></td>
+                <td>${formatDate(child.date_of_birth)}</td>
+                <td>
+                    <div class="table-actions">
+                        <button type="button" class="view-schedule-btn" data-baby-id="${child.baby_id}">View Schedule</button>
+                        <button type="button" class="secondary-btn edit-baby-btn" data-edit-baby-id="${child.baby_id}">Edit</button>
+                    </div>
+                </td>
             </tr>
         `).join("")
         : `<tr><td colspan="4">No children registered for this mother.</td></tr>`;
@@ -85,13 +245,23 @@ const renderMotherSearchResults = (mother) => {
 
     document.getElementById("closeSearchResults")?.addEventListener("click", closeSearchResults);
 
-    const scheduleButtons = motherSearchResults.querySelectorAll("button[data-baby-id]");
+    const scheduleButtons = motherSearchResults.querySelectorAll(".view-schedule-btn");
     scheduleButtons.forEach(button => {
         button.addEventListener("click", () => {
             const babyId = button.getAttribute("data-baby-id");
             const babyName = button.closest("tr").querySelector("td").textContent;
-            // Redirect to schedule-child.html with baby_id and baby_name parameters
             window.location.href = `schedule-child.html?baby_id=${encodeURIComponent(babyId)}&baby_name=${encodeURIComponent(babyName)}`;
+        });
+    });
+
+    const editButtons = motherSearchResults.querySelectorAll(".edit-baby-btn");
+    editButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            const babyId = button.getAttribute("data-edit-baby-id");
+            const child = currentMotherSearchResult?.children?.find(item => String(item.baby_id) === String(babyId));
+            if (child) {
+                openBabyEditModal(child);
+            }
         });
     });
 };

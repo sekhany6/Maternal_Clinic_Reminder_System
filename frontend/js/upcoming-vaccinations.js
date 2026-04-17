@@ -23,7 +23,8 @@ const getURLParameters = () => {
     const params = new URLSearchParams(window.location.search);
     return {
         babyId: params.get("baby_id"),
-        babyName: params.get("baby_name")
+        babyName: params.get("baby_name"),
+        scheduleId: params.get("schedule_id")
     };
 };
 
@@ -33,9 +34,19 @@ let pendingVaccinations = [];
 let sentVaccinations = [];
 let filteredByBaby = false;
 
+const hasReminderBeenSent = (item) => {
+    const latestStatus = (item.latest_message_status || "").toLowerCase();
+    return Number(item.reminder_sent) === 1
+        || latestStatus.startsWith("delivered:")
+        || latestStatus.startsWith("not delivered:")
+        || latestStatus.startsWith("delivery pending:");
+};
+
 // Search functionality
 const filterVaccinations = () => {
     const searchTerm = searchInput.value.toLowerCase().trim();
+    const emptyStateTitle = noDataMessage.querySelector("strong");
+    const emptyStateBody = noDataMessage.querySelector("span");
     
     // Filter pending table
     const pendingRows = pendingTableBody.querySelectorAll("tr");
@@ -78,7 +89,10 @@ const filterVaccinations = () => {
     sentSection.style.display = sentVisibleCount > 0 ? "block" : "none";
     
     if (totalVisibleCount === 0 && searchTerm) {
-        noDataMessage.textContent = "No vaccinations found matching your search.";
+        if (emptyStateTitle && emptyStateBody) {
+            emptyStateTitle.textContent = "No vaccinations found.";
+            emptyStateBody.textContent = "No vaccinations matched your current search.";
+        }
         noDataMessage.style.display = "block";
     } else if (totalVisibleCount === 0) {
         noDataMessage.style.display = "none";
@@ -204,9 +218,21 @@ const fetchUpcomingVaccinations = async () => {
     sentSection.style.display = "none";
     searchSection.style.display = "none";
     noDataMessage.style.display = "none";
+    filteredByBaby = false;
 
     try {
-        const res = await fetch(`${API}/reminders/upcoming-vaccinations`);
+        const { babyId, babyName, scheduleId } = getURLParameters();
+        const query = new URLSearchParams();
+
+        if (babyId) {
+            query.set("baby_id", babyId);
+        }
+
+        if (scheduleId) {
+            query.set("schedule_id", scheduleId);
+        }
+
+        const res = await fetch(`${API}/reminders/upcoming-vaccinations${query.toString() ? `?${query.toString()}` : ""}`);
         const data = await res.json();
 
         loadingDiv.style.display = "none";
@@ -224,19 +250,17 @@ const fetchUpcomingVaccinations = async () => {
         // Store all data
         allVaccinationData = data;
         
-        // Get baby_id from URL if present
-        const { babyId, babyName } = getURLParameters();
-        
-        // Filter by baby_id if it's provided
         let dataToDisplay = data;
-        if (babyId) {
-            dataToDisplay = data.filter(item => item.baby_id == babyId);
+        if (scheduleId) {
+            dataToDisplay = data.filter(item => String(item.schedule_id) === String(scheduleId));
+            filteredByBaby = true;
+        } else if (babyId) {
+            dataToDisplay = data.filter(item => String(item.baby_id) === String(babyId));
             filteredByBaby = true;
         }
         
-        // Separate data by reminder_sent status
-        pendingVaccinations = dataToDisplay.filter(item => item.reminder_sent === 0);
-        sentVaccinations = dataToDisplay.filter(item => item.reminder_sent === 1);
+        pendingVaccinations = dataToDisplay.filter(item => !hasReminderBeenSent(item));
+        sentVaccinations = dataToDisplay.filter(item => hasReminderBeenSent(item));
 
         // Populate pending table (reminder not sent yet)
         pendingTableBody.innerHTML = "";
@@ -264,6 +288,20 @@ const fetchUpcomingVaccinations = async () => {
         const totalVaccinations = pendingVaccinations.length + sentVaccinations.length;
         searchCount.textContent = `${totalVaccinations} vaccination${totalVaccinations !== 1 ? 's' : ''}`;
         searchInput.value = ""; // Clear search input
+
+        if (filteredByBaby && totalVaccinations === 0) {
+            const emptyStateTitle = noDataMessage.querySelector("strong");
+            const emptyStateBody = noDataMessage.querySelector("span");
+
+            if (emptyStateTitle && emptyStateBody) {
+                emptyStateTitle.textContent = "No matching reminders found.";
+                emptyStateBody.textContent = scheduleId
+                    ? "This vaccine does not have a matching reminder entry in the current month view."
+                    : `No upcoming vaccination reminders were found for ${babyName || "this child"} in the current month.`;
+            }
+
+            noDataMessage.style.display = "block";
+        }
 
     } catch (error) {
         loadingDiv.style.display = "none";

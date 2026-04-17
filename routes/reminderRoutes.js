@@ -47,6 +47,25 @@ router.get("/send-reminders", async (req, res) => {
 });
 
 router.get("/upcoming-vaccinations", (req, res) => {
+    const scheduleId = req.query.schedule_id;
+    const babyId = req.query.baby_id;
+    const filters = [
+        "vs.status != 'Completed'",
+        "MONTH(vs.due_date) = MONTH(CURDATE())",
+        "YEAR(vs.due_date) = YEAR(CURDATE())"
+    ];
+    const params = [];
+
+    if (scheduleId) {
+        filters.push("vs.schedule_id = ?");
+        params.push(scheduleId);
+    }
+
+    if (babyId) {
+        filters.push("b.baby_id = ?");
+        params.push(babyId);
+    }
+
     const sql = `
         SELECT
             vs.schedule_id,
@@ -71,13 +90,11 @@ router.get("/upcoming-vaccinations", (req, res) => {
         JOIN babies b ON vs.baby_id = b.baby_id
         JOIN mothers m ON b.mother_id = m.mother_id
         JOIN vaccines v ON vs.vaccine_id = v.vaccine_id
-        WHERE vs.status != 'Completed'
-          AND MONTH(vs.due_date) = MONTH(CURDATE())
-          AND YEAR(vs.due_date) = YEAR(CURDATE())
+        WHERE ${filters.join("\n          AND ")}
         ORDER BY vs.reminder_sent ASC, vs.due_date ASC
     `;
 
-    db.query(sql, (err, results) => {
+    db.query(sql, params, (err, results) => {
         if (err) {
             console.error("Error fetching upcoming vaccinations:", err);
             return res.status(500).json({ error: "Unable to retrieve upcoming vaccinations" });

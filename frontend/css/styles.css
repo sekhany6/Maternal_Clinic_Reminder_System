@@ -1163,6 +1163,49 @@ tbody tr:hover {
     text-align: center;
 }
 
+.payment-layout {
+    grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.7fr);
+    align-items: stretch;
+}
+
+.payment-card,
+.payment-status-card {
+    min-height: 100%;
+}
+
+.payment-status-card {
+    display: grid;
+    align-content: center;
+    gap: 14px;
+}
+
+.payment-status-icon {
+    width: 64px;
+    height: 64px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    color: var(--brand-deep);
+    background: var(--brand-soft);
+    border: 1px solid rgba(93, 159, 228, 0.24);
+}
+
+.payment-status-icon svg {
+    width: 32px;
+    height: 32px;
+}
+
+.payment-reference {
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    color: var(--brand-deep);
+    background: var(--blue-soft);
+    border: 1px solid rgba(93, 159, 228, 0.2);
+    overflow-wrap: anywhere;
+    font-weight: 700;
+}
+
 /* Display utilities */
 .hidden {
     display: none !important;
@@ -1285,6 +1328,7 @@ tbody tr:hover {
     .hero-panel,
     .auth-shell,
     .split-layout,
+    .payment-layout,
     .reminder-grid,
     .tables-section,
     .form-grid {

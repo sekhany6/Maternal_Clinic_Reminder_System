@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>M-Pesa Payment - Clinic Reminder</title>
+    <link rel="icon" type="image/png" href="../images/remindericon.png">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="hospital-records.html">Hospital Records</a>
+            <a href="index.html" class="logout-link">Logout</a>
+        </nav>
+    </header>
+
+    <main class="page-shell payment-shell">
+        <button type="button" class="back-button page-back" onclick="window.history.back()" aria-label="Go back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M15 18l-6-6 6-6"></path>
+            </svg>
+        </button>
+
+        <section class="hero-panel payment-hero">
+            <div class="hero-copy">
+                <span class="eyebrow">Clinic checkout</span>
+                <h1>M-Pesa payment window</h1>
+                <p>Send a secure STK push to the client's phone for clinic service payments.</p>
+            </div>
+            <div class="hero-side">
+                <div class="hero-note">
+                    <strong>Before sending</strong>
+                    Confirm the phone number and amount with the client. They will approve the payment on their handset.
+                </div>
+            </div>
+        </section>
+
+        <section class="section-stack payment-layout">
+            <section class="stack-card payment-card">
+                <div class="section-heading">
+                    <div>
+                        <h2>Send payment request</h2>
+                        <p>Use a Safaricom.</p>
+                    </div>
+                    <span class="pill pill-green">STK push</span>
+                </div>
+
+                <div id="paymentAlert"></div>
+
+                <form id="paymentForm" class="plain-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="paymentPhone">Client phone number</label>
+                            <input type="tel" id="paymentPhone" placeholder="0712345678" autocomplete="tel" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="paymentAmount">Amount (KES)</label>
+                            <input type="number" id="paymentAmount" min="1" step="1" placeholder="100" required>
+                        </div>
+                        <div class="form-group form-group-full">
+                            <label for="paymentNote">Payment note</label>
+                            <input type="text" id="paymentNote" value="Clinic service payment" readonly>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="reset" class="secondary-btn">Clear</button>
+                        <button type="submit" id="paymentSubmit" class="btn-submit">Send STK push</button>
+                    </div>
+                </form>
+            </section>
+
+            <aside class="stack-card payment-status-card">
+                <div class="payment-status-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="6" y="2" width="12" height="20" rx="2"></rect>
+                        <path d="M10 18h4"></path>
+                    </svg>
+                </div>
+                <h2 id="paymentStatusTitle">Ready for checkout</h2>
+                <p id="paymentStatusText">Enter the client's number and amount, then send the request while they have their phone nearby.</p>
+                <div class="payment-reference hidden" id="paymentReference"></div>
+            </aside>
+        </section>
+    </main>
+
+    <script src="js/logout.js"></script>
+    <script src="js/payment.js"></script>
+</body>
+</html>

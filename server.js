@@ -13,6 +13,7 @@ const staffRoutes = require("./routes/staffRoutes");
 const vaccineRoutes = require("./routes/vaccineRoutes");
 const reminderRoutes = require("./routes/reminderRoutes");
 const hospitalRoutes = require("./routes/hospitalRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use("/api/staff", staffRoutes);
 app.use("/api/vaccines", vaccineRoutes);
 app.use("/api/reminders", reminderRoutes);
 app.use("/api/hospitals", hospitalRoutes);
+app.use("/api/payments", paymentRoutes);
 
 // HOME ROUTE
 app.get("/", (req, res) => {

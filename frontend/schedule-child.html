@@ -38,11 +38,37 @@
                     <strong>Completed table</strong>
                     Keeps a simple history of vaccines that have already been administered.
                 </div>
+                <button type="button" id="printRecordsBtn" class="btn" disabled>Print Records</button>
             </div>
         </section>
 
         <section class="section-stack">
             <div id="alertContainer"></div>
+
+            <section class="table-card hidden" id="childFamilyDetails">
+                <div class="section-heading">
+                    <div>
+                        <h2>Mother details</h2>
+                        <p>Family and clinic information linked to this child.</p>
+                    </div>
+                </div>
+                <div class="detail-grid">
+                    <article class="detail-panel">
+                        <div class="detail-panel-header">
+                            <h3 id="motherNameDetail">Mother</h3>
+                        </div>
+                        <p id="motherPhoneDetail"></p>
+                        <p id="motherNationalIdDetail"></p>
+                    </article>
+                    <article class="detail-panel">
+                        <div class="detail-panel-header">
+                            <h3 id="hospitalNameDetail">Hospital</h3>
+                        </div>
+                        <p id="hospitalLocationDetail"></p>
+                        <p id="hospitalContactDetail"></p>
+                    </article>
+                </div>
+            </section>
 
             <div class="tables-section">
                 <section class="table-card">
@@ -66,7 +92,7 @@
                             <tr class="loading"><td colspan="4">Loading...</td></tr>
                         </tbody>
                     </table>
-                    <div id="pendingNoData" class="empty-state" style="display:none;">
+                    <div id="pendingNoData" class="empty-state hidden">
                         <strong>No pending vaccinations.</strong>
                         <span>This child currently has no outstanding vaccination records.</span>
                     </div>
@@ -85,14 +111,15 @@
                             <tr>
                                 <th>Vaccine</th>
                                 <th>Due Date</th>
+                                <th>Vaccination Date</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
                         <tbody id="completedTableBody">
-                            <tr class="loading"><td colspan="3">Loading...</td></tr>
+                            <tr class="loading"><td colspan="4">Loading...</td></tr>
                         </tbody>
                     </table>
-                    <div id="completedNoData" class="empty-state" style="display:none;">
+                    <div id="completedNoData" class="empty-state hidden">
                         <strong>No completed vaccinations.</strong>
                         <span>Completed records for this child will appear here.</span>
                     </div>

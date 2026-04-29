@@ -1,4 +1,6 @@
 const API = "http://localhost:3000/api";
+let currentBabyDetails = null;
+let currentSchedule = [];
 
 // Get URL parameters
 const getURLParameters = () => {
@@ -82,14 +84,18 @@ const markVaccinationComplete = async (scheduleId, vaccineName) => {
 // Display vaccination schedule in two tables
 const displayVaccinationSchedule = async (babyId) => {
     const schedule = await fetchChildVaccinationSchedule(babyId);
+    currentSchedule = schedule;
 
     if (schedule.length === 0) {
         document.getElementById("pendingTableBody").innerHTML = "";
-        document.getElementById("pendingNoData").style.display = "block";
+        document.getElementById("pendingNoData").classList.remove("hidden");
         document.getElementById("completedTableBody").innerHTML = "";
-        document.getElementById("completedNoData").style.display = "block";
+        document.getElementById("completedNoData").classList.remove("hidden");
+        document.getElementById("printRecordsBtn").disabled = true;
         return;
     }
+
+    document.getElementById("printRecordsBtn").disabled = false;
 
     // Separate pending and completed vaccinations
     const pending = schedule.filter(item => item.status !== "Completed");
@@ -101,9 +107,9 @@ const displayVaccinationSchedule = async (babyId) => {
 
     if (pending.length === 0) {
         pendingTableBody.innerHTML = "";
-        pendingNoData.style.display = "block";
+        pendingNoData.classList.remove("hidden");
     } else {
-        pendingNoData.style.display = "none";
+        pendingNoData.classList.add("hidden");
         pendingTableBody.innerHTML = pending.map(item => {
             const dueDate = new Date(item.due_date).toLocaleDateString();
             const today = new Date();
@@ -133,15 +139,17 @@ const displayVaccinationSchedule = async (babyId) => {
 
     if (completed.length === 0) {
         completedTableBody.innerHTML = "";
-        completedNoData.style.display = "block";
+        completedNoData.classList.remove("hidden");
     } else {
-        completedNoData.style.display = "none";
+        completedNoData.classList.add("hidden");
         completedTableBody.innerHTML = completed.map(item => {
             const dueDate = new Date(item.due_date).toLocaleDateString();
+            const vaccinationDate = formatDate(item.vaccination_date || item.completed_date);
             return `
                 <tr>
                     <td data-label="Vaccine"><a class="table-link" href="${getReminderLink(item.schedule_id)}" title="Open this vaccine in upcoming reminders">${escapeHtml(item.vaccine_name)}</a></td>
                     <td data-label="Due Date">${dueDate}</td>
+                    <td data-label="Vaccination Date">${vaccinationDate}</td>
                     <td data-label="Status">${item.status}</td>
                 </tr>
             `;
@@ -187,6 +195,111 @@ const fetchBabyDetails = async (babyId) => {
     return data;
 };
 
+const renderMotherDetails = (baby) => {
+    const detailsSection = document.getElementById("childFamilyDetails");
+    if (!detailsSection) return;
+
+    document.getElementById("motherNameDetail").textContent = baby.mother_name || "Mother";
+    document.getElementById("motherPhoneDetail").innerHTML = `<strong>Phone:</strong> ${escapeHtml(baby.phone_no || "-")}`;
+    document.getElementById("motherNationalIdDetail").innerHTML = `<strong>National ID:</strong> ${escapeHtml(baby.national_id || "-")}`;
+    document.getElementById("hospitalNameDetail").textContent = baby.hospital_name || "Hospital";
+    document.getElementById("hospitalLocationDetail").innerHTML = `<strong>Location:</strong> ${escapeHtml(baby.hospital_location || "-")}`;
+    document.getElementById("hospitalContactDetail").innerHTML = `<strong>Contact:</strong> ${escapeHtml(baby.hospital_contact || "-")}`;
+    detailsSection.classList.remove("hidden");
+};
+
+const buildPrintRows = (items) => {
+    if (!items.length) {
+        return `<tr><td colspan="4">No records found.</td></tr>`;
+    }
+
+    return items.map(item => `
+        <tr>
+            <td>${escapeHtml(item.vaccine_name)}</td>
+            <td>${formatDate(item.due_date)}</td>
+            <td>${formatDate(item.vaccination_date || item.completed_date)}</td>
+            <td>${escapeHtml(item.status)}</td>
+        </tr>
+    `).join("");
+};
+
+const buildPrintableRecords = () => {
+    const baby = currentBabyDetails || {};
+    const pending = currentSchedule.filter(item => item.status !== "Completed");
+    const completed = currentSchedule.filter(item => item.status === "Completed");
+
+    return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Vaccination Records - ${escapeHtml(baby.baby_name || "Child")}</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 32px; color: #1c3552; }
+                h1, h2 { margin: 0 0 12px; }
+                p { margin: 0 0 8px; line-height: 1.5; }
+                .meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 20px 0 24px; }
+                .panel { border: 1px solid #d7e4f2; border-radius: 10px; padding: 14px; background: #f8fbff; }
+                table { width: 100%; border-collapse: collapse; margin: 12px 0 24px; }
+                th, td { border: 1px solid #d7e4f2; padding: 8px; text-align: left; }
+                th { background: #eef6ff; }
+            </style>
+        </head>
+        <body>
+            <h1>Child Vaccination Records</h1>
+            <p><strong>Child:</strong> ${escapeHtml(baby.baby_name || "-")}</p>
+            <p><strong>Date of birth:</strong> ${formatDate(baby.date_of_birth)}</p>
+            <p><strong>Gender:</strong> ${escapeHtml(baby.gender || "-")}</p>
+
+            <section class="meta">
+                <div class="panel">
+                    <h2>Mother Details</h2>
+                    <p><strong>Name:</strong> ${escapeHtml(baby.mother_name || "-")}</p>
+                    <p><strong>Phone:</strong> ${escapeHtml(baby.phone_no || "-")}</p>
+                    <p><strong>National ID:</strong> ${escapeHtml(baby.national_id || "-")}</p>
+                </div>
+                <div class="panel">
+                    <h2>Hospital Details</h2>
+                    <p><strong>Name:</strong> ${escapeHtml(baby.hospital_name || "-")}</p>
+                    <p><strong>Location:</strong> ${escapeHtml(baby.hospital_location || "-")}</p>
+                    <p><strong>Contact:</strong> ${escapeHtml(baby.hospital_contact || "-")}</p>
+                </div>
+            </section>
+
+            <h2>Pending Vaccinations</h2>
+            <table>
+                <thead><tr><th>Vaccine</th><th>Due Date</th><th>Vaccination Date</th><th>Status</th></tr></thead>
+                <tbody>${buildPrintRows(pending)}</tbody>
+            </table>
+
+            <h2>Completed Vaccinations</h2>
+            <table>
+                <thead><tr><th>Vaccine</th><th>Due Date</th><th>Vaccination Date</th><th>Status</th></tr></thead>
+                <tbody>${buildPrintRows(completed)}</tbody>
+            </table>
+        </body>
+        </html>
+    `;
+};
+
+const printVaccinationRecords = () => {
+    if (!currentSchedule.length) {
+        showAlert("No vaccination records available to print.", "error");
+        return;
+    }
+
+    const printWindow = window.open("", "_blank", "width=1200,height=800");
+    if (!printWindow) {
+        showAlert("Unable to open the print window. Please allow pop-ups and try again.", "error");
+        return;
+    }
+
+    printWindow.document.open();
+    printWindow.document.write(buildPrintableRecords());
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+};
+
 // Initialize page
 window.addEventListener("DOMContentLoaded", async () => {
     const { babyId, babyName } = getURLParameters();
@@ -200,12 +313,15 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     try {
         const baby = await fetchBabyDetails(babyId);
+        currentBabyDetails = baby;
         document.getElementById("babyNameHeader").textContent = `Vaccination Schedule for ${baby.baby_name}`;
         document.getElementById("babyMeta").textContent = `Date of birth: ${formatDate(baby.date_of_birth)}`;
+        renderMotherDetails(baby);
     } catch (error) {
         document.getElementById("babyMeta").textContent = "Date of birth: Unavailable";
         showAlert(error.message, "error");
     }
 
     await displayVaccinationSchedule(babyId);
+    document.getElementById("printRecordsBtn")?.addEventListener("click", printVaccinationRecords);
 });

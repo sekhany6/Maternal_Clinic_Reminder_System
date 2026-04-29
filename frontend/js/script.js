@@ -99,7 +99,7 @@ const ensureBabyEditModal = () => {
     const cancelButton = document.getElementById("cancelBabyEdit");
 
     const closeModal = () => {
-        modal.style.display = "none";
+        modal.classList.add("hidden");
         document.getElementById("babyEditAlert").innerHTML = "";
     };
 
@@ -160,7 +160,7 @@ const openBabyEditModal = (child) => {
     document.getElementById("editBabyDob").value = toDateInputValue(child.date_of_birth);
     document.getElementById("editBabyGender").value = child.gender || "";
     document.getElementById("babyEditAlert").innerHTML = "";
-    document.getElementById("babyEditModal").style.display = "block";
+    document.getElementById("babyEditModal").classList.add("visible");
 };
 
 const closeSearchResults = () => {
@@ -565,8 +565,8 @@ if (pendingReminderTable || completedReminderTable) {
         .then(res => res.json())
         .then(data => {
             if (!data || data.length === 0) {
-                if (pendingNoData) pendingNoData.style.display = "block";
-                if (completedNoData) completedNoData.style.display = "block";
+                if (pendingNoData) pendingNoData.classList.add("hidden");
+                if (completedNoData) completedNoData.classList.add("hidden");
                 return;
             }
 
@@ -588,9 +588,9 @@ if (pendingReminderTable || completedReminderTable) {
             if (pendingReminderTable) {
                 pendingReminderTable.innerHTML = "";
                 if (pending.length === 0) {
-                    pendingNoData.style.display = "block";
+                    pendingNoData.classList.remove("hidden");
                 } else {
-                    pendingNoData.style.display = "none";
+                    pendingNoData.classList.add("hidden");
                     pending.forEach(row => {
                         const dueDate = row.due_date ? new Date(row.due_date).toLocaleDateString() : "-";
                         pendingReminderTable.innerHTML += `
@@ -611,9 +611,9 @@ if (pendingReminderTable || completedReminderTable) {
             if (completedReminderTable) {
                 completedReminderTable.innerHTML = "";
                 if (completed.length === 0) {
-                    completedNoData.style.display = "block";
+                    completedNoData.classList.remove("hidden");
                 } else {
-                    completedNoData.style.display = "none";
+                    completedNoData.classList.add("hidden");
                     completed.forEach(row => {
                         const dueDate = row.due_date ? new Date(row.due_date).toLocaleDateString() : "-";
                         completedReminderTable.innerHTML += `

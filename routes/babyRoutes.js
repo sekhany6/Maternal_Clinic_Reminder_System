@@ -30,8 +30,8 @@ const createVaccinationSchedule = async (babyId, dateOfBirth) => {
     await Promise.all(vaccines.map(async (vaccine) => {
         const scheduleSql = `
             INSERT INTO vaccination_schedule
-            (baby_id, vaccine_id, due_date, status, reminder_sent)
-            VALUES (?, ?, ?, 'Pending', 0)
+            (baby_id, vaccine_id, due_date, status, reminder_sent, date_created)
+            VALUES (?, ?, ?, 'Pending', 0, NOW())
         `;
 
         await queryAsync(scheduleSql, [
@@ -96,8 +96,8 @@ router.post("/register", async (req, res) => {
     }
 
     const insertBaby = `
-        INSERT INTO babies (baby_name, date_of_birth, gender, mother_id)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO babies (baby_name, date_of_birth, gender, mother_id, date_created)
+        VALUES (?, ?, ?, ?, NOW())
     `;
 
     try {
@@ -191,9 +191,23 @@ router.get("/:baby_id", async (req, res) => {
 
     try {
         const rows = await queryAsync(`
-            SELECT baby_id, baby_name, date_of_birth, gender, mother_id
-            FROM babies
-            WHERE baby_id = ?
+            SELECT
+                b.baby_id,
+                b.baby_name,
+                b.date_of_birth,
+                b.gender,
+                b.mother_id,
+                m.mother_name,
+                m.phone_no,
+                m.national_id,
+                m.hospital_id,
+                h.hospital_name,
+                h.location AS hospital_location,
+                h.contact AS hospital_contact
+            FROM babies b
+            JOIN mothers m ON b.mother_id = m.mother_id
+            LEFT JOIN hospitals h ON m.hospital_id = h.hospital_id
+            WHERE b.baby_id = ?
         `, [baby_id]);
 
         if (!rows.length) {

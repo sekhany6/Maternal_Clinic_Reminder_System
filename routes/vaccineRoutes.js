@@ -3,6 +3,113 @@ const router = express.Router();
 const db = require("../db/connection");
 
 
+// GET ALL VACCINATION RECORDS
+router.get("/records", (req, res) => {
+    const sql = `
+        SELECT 
+            vr.record_id,
+            vr.baby_id,
+            b.baby_name,
+            m.mother_name,
+            m.phone_no,
+            v.vaccine_id,
+            v.vaccine_name,
+            vr.vaccination_date,
+            vr.status,
+            vr.date_created
+        FROM vaccination_records vr
+        JOIN babies b ON vr.baby_id = b.baby_id
+        JOIN mothers m ON b.mother_id = m.mother_id
+        JOIN vaccines v ON vr.vaccine_id = v.vaccine_id
+        ORDER BY vr.date_created DESC, vr.vaccination_date DESC
+    `;
+
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Error fetching vaccination records:', err);
+            return res.status(500).json({ error: "Unable to retrieve vaccination records." });
+        }
+
+        res.json(results);
+    });
+});
+
+// GET VACCINATION RECORDS FOR A SPECIFIC BABY
+router.get("/records/baby/:baby_id", (req, res) => {
+    const babyId = req.params.baby_id;
+
+    const sql = `
+        SELECT 
+            vr.record_id,
+            vr.baby_id,
+            b.baby_name,
+            m.mother_name,
+            m.phone_no,
+            h.hospital_name,
+            v.vaccine_id,
+            v.vaccine_name,
+            vr.vaccination_date,
+            vr.status,
+            vr.date_created
+        FROM vaccination_records vr
+        JOIN babies b ON vr.baby_id = b.baby_id
+        JOIN mothers m ON b.mother_id = m.mother_id
+        LEFT JOIN hospitals h ON m.hospital_id = h.hospital_id
+        JOIN vaccines v ON vr.vaccine_id = v.vaccine_id
+        WHERE vr.baby_id = ?
+        ORDER BY vr.vaccination_date DESC, vr.date_created DESC
+    `;
+
+    db.query(sql, [babyId], (err, results) => {
+        if (err) {
+            console.error('Error fetching baby vaccination records:', err);
+            return res.status(500).json({ error: "Unable to retrieve vaccination records for this baby." });
+        }
+
+        res.json(results);
+    });
+});
+
+// GET VACCINATION RECORDS BY DATE RANGE
+router.get("/records/date-range", (req, res) => {
+    const { start_date, end_date } = req.query;
+
+    if (!start_date || !end_date) {
+        return res.status(400).json({ error: "Start date and end date are required." });
+    }
+
+    const sql = `
+        SELECT 
+            vr.record_id,
+            vr.baby_id,
+            b.baby_name,
+            m.mother_name,
+            m.phone_no,
+            h.hospital_name,
+            v.vaccine_id,
+            v.vaccine_name,
+            vr.vaccination_date,
+            vr.status,
+            vr.date_created
+        FROM vaccination_records vr
+        JOIN babies b ON vr.baby_id = b.baby_id
+        JOIN mothers m ON b.mother_id = m.mother_id
+        JOIN hospitals h ON m.hospital_id = h.hospital_id
+        JOIN vaccines v ON vr.vaccine_id = v.vaccine_id
+        WHERE vr.vaccination_date BETWEEN ? AND ?
+        ORDER BY vr.vaccination_date DESC, vr.date_created DESC
+    `;
+
+    db.query(sql, [start_date, end_date], (err, results) => {
+        if (err) {
+            console.error('Error fetching vaccination records by date range:', err);
+            return res.status(500).json({ error: "Unable to retrieve vaccination records for the specified date range." });
+        }
+
+        res.json(results);
+    });
+});
+
 // GET BABY VACCINE SCHEDULE
 router.get("/schedule/:baby_id", (req, res) => {
 
@@ -13,10 +120,24 @@ router.get("/schedule/:baby_id", (req, res) => {
             vs.schedule_id,
             v.vaccine_name,
             vs.due_date,
-            vs.status
+            vs.status,
+            vs.completed_date,
+            vr.record_id,
+            vr.vaccination_date,
+            vr.date_created AS record_date_created,
+            vs.date_created
         FROM vaccination_schedule vs
         JOIN vaccines v
         ON vs.vaccine_id = v.vaccine_id
+        LEFT JOIN (
+            SELECT latest.record_id, latest.baby_id, latest.vaccine_id, latest.vaccination_date, latest.date_created
+            FROM vaccination_records latest
+            INNER JOIN (
+                SELECT baby_id, vaccine_id, MAX(record_id) AS latest_record_id
+                FROM vaccination_records
+                GROUP BY baby_id, vaccine_id
+            ) grouped ON grouped.latest_record_id = latest.record_id
+        ) vr ON vr.baby_id = vs.baby_id AND vr.vaccine_id = vs.vaccine_id
         WHERE vs.baby_id = ?
         ORDER BY vs.due_date
     `;
@@ -43,7 +164,8 @@ router.get("/schedules", (req, res) => {
             m.mother_name,
             v.vaccine_name,
             vs.due_date,
-            vs.status
+            vs.status,
+            vs.date_created
         FROM vaccination_schedule vs
         JOIN babies b ON vs.baby_id = b.baby_id
         JOIN mothers m ON b.mother_id = m.mother_id
@@ -76,6 +198,7 @@ router.get("/reminders", (req, res) => {
             vs.due_date,
             vs.status,
             vs.reminder_sent,
+            vs.date_created,
             latest_rr.reminder_id,
             latest_rr.reminder_sent AS reminder_date,
             latest_rr.message_status,
@@ -158,8 +281,8 @@ router.post("/record", (req, res) => {
 
         const sql = `
             INSERT INTO vaccination_records
-            (baby_id, vaccine_id, vaccination_date, status)
-            VALUES (?, ?, ?, 'Completed')
+            (baby_id, vaccine_id, vaccination_date, status, date_created)
+            VALUES (?, ?, ?, 'Completed', NOW())
         `;
 
         db.query(sql,

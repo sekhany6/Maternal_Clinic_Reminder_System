@@ -23,11 +23,13 @@ const getMonthRange = (monthValue) => {
     const monthIndex = selectedDate.getMonth();
     const startDate = new Date(year, monthIndex, 1);
     const endDate = new Date(year, monthIndex + 1, 0);
+    const nextMonthDate = new Date(year, monthIndex + 1, 1);
     const pad = (value) => String(value).padStart(2, "0");
 
     return {
         monthKey: `${year}-${pad(monthIndex + 1)}`,
         startDate: `${year}-${pad(monthIndex + 1)}-01`,
+        nextMonthStartDate: `${nextMonthDate.getFullYear()}-${pad(nextMonthDate.getMonth() + 1)}-01`,
         endDate: `${year}-${pad(monthIndex + 1)}-${pad(endDate.getDate())}`,
         label: startDate.toLocaleString("en-US", { month: "long", year: "numeric" })
     };
@@ -47,7 +49,8 @@ router.get("/monthly-records", async (req, res) => {
             h.hospital_id,
             h.hospital_name,
             h.location,
-            h.contact
+            h.contact,
+            h.date_created
         FROM hospitals h
         ORDER BY h.hospital_name ASC
     `;
@@ -57,7 +60,8 @@ router.get("/monthly-records", async (req, res) => {
             s.staff_id,
             s.staff_name,
             s.role,
-            s.hospital_id
+            s.hospital_id,
+            s.date_created
         FROM staff s
         ORDER BY s.staff_name ASC
     `;
@@ -69,13 +73,15 @@ router.get("/monthly-records", async (req, res) => {
             m.mother_name,
             m.phone_no,
             m.national_id,
+            m.date_created AS mother_date_created,
             b.baby_id,
             b.baby_name,
             b.date_of_birth,
-            b.gender
-        FROM hospitals h
-        LEFT JOIN mothers m ON m.hospital_id = h.hospital_id
-        LEFT JOIN babies b ON b.mother_id = m.mother_id
+            b.gender,
+            b.date_created AS baby_date_created
+        FROM babies b
+        JOIN mothers m ON b.mother_id = m.mother_id
+        JOIN hospitals h ON m.hospital_id = h.hospital_id
         ORDER BY h.hospital_name ASC, m.mother_name ASC, b.date_of_birth ASC, b.baby_name ASC
     `;
 
@@ -91,34 +97,77 @@ router.get("/monthly-records", async (req, res) => {
             v.vaccine_name,
             vs.schedule_id,
             vs.due_date,
-            vs.status AS schedule_status,
-            vs.completed_date,
             vr.vaccination_date,
-            COALESCE(vr.status, vs.status) AS record_status
+            'Completed' AS report_status,
+            'vaccination_records' AS report_source
+        FROM vaccination_records vr
+        JOIN babies b ON vr.baby_id = b.baby_id
+        JOIN mothers m ON b.mother_id = m.mother_id
+        JOIN hospitals h ON m.hospital_id = h.hospital_id
+        JOIN vaccines v ON vr.vaccine_id = v.vaccine_id
+        LEFT JOIN vaccination_schedule vs ON vs.baby_id = vr.baby_id AND vs.vaccine_id = vr.vaccine_id
+        WHERE vr.status = 'Completed'
+          AND vr.vaccination_date >= ?
+          AND vr.vaccination_date < ?
+
+        UNION ALL
+
+        SELECT
+            h.hospital_id,
+            m.mother_id,
+            m.mother_name,
+            b.baby_id,
+            b.baby_name,
+            b.date_of_birth,
+            v.vaccine_id,
+            v.vaccine_name,
+            vs.schedule_id,
+            vs.due_date,
+            COALESCE(vs.completed_date, vs.due_date) AS vaccination_date,
+            'Completed' AS report_status,
+            'completed_schedule' AS report_source
         FROM vaccination_schedule vs
         JOIN babies b ON vs.baby_id = b.baby_id
         JOIN mothers m ON b.mother_id = m.mother_id
         JOIN hospitals h ON m.hospital_id = h.hospital_id
         JOIN vaccines v ON vs.vaccine_id = v.vaccine_id
-        LEFT JOIN (
-            SELECT
-                latest.baby_id,
-                latest.vaccine_id,
-                latest.vaccination_date,
-                latest.status
-            FROM vaccination_records latest
-            INNER JOIN (
-                SELECT baby_id, vaccine_id, MAX(record_id) AS latest_record_id
-                FROM vaccination_records
-                GROUP BY baby_id, vaccine_id
-            ) grouped
-                ON grouped.latest_record_id = latest.record_id
-        ) vr ON vr.baby_id = vs.baby_id AND vr.vaccine_id = vs.vaccine_id
-        WHERE (
-            vs.due_date BETWEEN ? AND ?
-            OR COALESCE(vr.vaccination_date, vs.completed_date, CASE WHEN vs.status = 'Completed' THEN vs.due_date END) BETWEEN ? AND ?
-        )
-        ORDER BY h.hospital_name ASC, m.mother_name ASC, b.baby_name ASC, vs.due_date ASC
+        WHERE vs.status = 'Completed'
+          AND COALESCE(vs.completed_date, vs.due_date) >= ?
+          AND COALESCE(vs.completed_date, vs.due_date) < ?
+          AND NOT EXISTS (
+              SELECT 1
+              FROM vaccination_records vr_existing
+              WHERE vr_existing.baby_id = vs.baby_id
+                AND vr_existing.vaccine_id = vs.vaccine_id
+                AND vr_existing.status = 'Completed'
+          )
+
+        UNION ALL
+
+        SELECT
+            h.hospital_id,
+            m.mother_id,
+            m.mother_name,
+            b.baby_id,
+            b.baby_name,
+            b.date_of_birth,
+            v.vaccine_id,
+            v.vaccine_name,
+            vs.schedule_id,
+            vs.due_date,
+            NULL AS vaccination_date,
+            'Pending' AS report_status,
+            'vaccination_schedule' AS report_source
+        FROM vaccination_schedule vs
+        JOIN babies b ON vs.baby_id = b.baby_id
+        JOIN mothers m ON b.mother_id = m.mother_id
+        JOIN hospitals h ON m.hospital_id = h.hospital_id
+        JOIN vaccines v ON vs.vaccine_id = v.vaccine_id
+        WHERE vs.status != 'Completed'
+          AND vs.due_date >= ?
+          AND vs.due_date < ?
+
+        ORDER BY hospital_id ASC, mother_name ASC, baby_name ASC, due_date ASC, vaccine_name ASC
     `;
 
     try {
@@ -128,9 +177,11 @@ router.get("/monthly-records", async (req, res) => {
             queryAsync(familiesSql),
             queryAsync(vaccinationsSql, [
                 monthRange.startDate,
-                monthRange.endDate,
+                monthRange.nextMonthStartDate,
                 monthRange.startDate,
-                monthRange.endDate
+                monthRange.nextMonthStartDate,
+                monthRange.startDate,
+                monthRange.nextMonthStartDate
             ])
         ]);
 
@@ -198,19 +249,6 @@ router.get("/monthly-records", async (req, res) => {
             const hospital = hospitalMap.get(row.hospital_id);
             if (!hospital) return;
 
-            const completionDate = row.vaccination_date || row.completed_date || (row.schedule_status === "Completed" ? row.due_date : null);
-            const isCompletedInMonth = row.schedule_status === "Completed"
-                && completionDate
-                && completionDate >= monthRange.startDate
-                && completionDate <= monthRange.endDate;
-            const isPendingInMonth = row.schedule_status !== "Completed"
-                && row.due_date >= monthRange.startDate
-                && row.due_date <= monthRange.endDate;
-
-            if (!isCompletedInMonth && !isPendingInMonth) {
-                return;
-            }
-
             hospital.vaccinations.push({
                 schedule_id: row.schedule_id,
                 mother_id: row.mother_id,
@@ -221,15 +259,16 @@ router.get("/monthly-records", async (req, res) => {
                 vaccine_id: row.vaccine_id,
                 vaccine_name: row.vaccine_name,
                 due_date: row.due_date,
-                vaccination_date: completionDate,
-                status: isCompletedInMonth ? "Completed" : "Pending"
+                vaccination_date: row.vaccination_date,
+                status: row.report_status,
+                source: row.report_source
             });
 
-            if (isCompletedInMonth) {
+            if (row.report_status === "Completed") {
                 hospital.completed_vaccinations += 1;
             }
 
-            if (isPendingInMonth) {
+            if (row.report_status === "Pending") {
                 hospital.pending_vaccinations += 1;
             }
         });

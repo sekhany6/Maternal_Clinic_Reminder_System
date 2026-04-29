@@ -55,18 +55,18 @@ const renderSummary = (summary) => {
     summaryChildren.textContent = summary.children;
     summaryCompleted.textContent = summary.completedVaccinations;
     summaryPending.textContent = summary.pendingVaccinations;
-    reportSummary.style.display = "grid";
+    reportSummary.classList.remove("hidden");
 };
 
 const renderTable = (records) => {
     reportTable.innerHTML = "";
 
     if (!records.length) {
-        reportEmpty.style.display = "block";
+        reportEmpty.classList.remove("hidden");
         return;
     }
 
-    reportEmpty.style.display = "none";
+    reportEmpty.classList.add("hidden");
     records.forEach((record) => {
         const row = document.createElement("tr");
         row.innerHTML = `
@@ -269,10 +269,10 @@ const loadReport = async () => {
         downloadPdfBtn.disabled = data.records.length === 0;
     } catch (error) {
         latestReport = null;
-        reportSummary.style.display = "none";
+        reportSummary.classList.add("hidden");
         reportTable.innerHTML = "";
         detailRecords.innerHTML = "";
-        reportEmpty.style.display = "block";
+        reportEmpty.classList.remove("hidden");
         showAlert(error.message, "error");
     }
 };

@@ -85,17 +85,25 @@ const filterVaccinations = () => {
     }
     
     // Show/hide sections based on visible rows
-    pendingSection.style.display = pendingVisibleCount > 0 ? "block" : "none";
-    sentSection.style.display = sentVisibleCount > 0 ? "block" : "none";
+    if (pendingVisibleCount > 0) {
+        pendingSection.classList.remove("hidden");
+    } else {
+        pendingSection.classList.add("hidden");
+    }
+    if (sentVisibleCount > 0) {
+        sentSection.classList.remove("hidden");
+    } else {
+        sentSection.classList.add("hidden");
+    }
     
     if (totalVisibleCount === 0 && searchTerm) {
         if (emptyStateTitle && emptyStateBody) {
             emptyStateTitle.textContent = "No vaccinations found.";
             emptyStateBody.textContent = "No vaccinations matched your current search.";
         }
-        noDataMessage.style.display = "block";
+        noDataMessage.classList.remove("hidden");
     } else if (totalVisibleCount === 0) {
-        noDataMessage.style.display = "none";
+        noDataMessage.classList.add("hidden");
     }
 };
 
@@ -112,18 +120,18 @@ searchInput.addEventListener("focus", () => {
 
 // Close modal when X is clicked
 closeBtn.addEventListener("click", () => {
-    messageModal.style.display = "none";
+    messageModal.classList.add("hidden");
 });
 
 // Close modal when cancel button is clicked
 cancelBtn.addEventListener("click", () => {
-    messageModal.style.display = "none";
+    messageModal.classList.add("hidden");
 });
 
 // Close modal when clicking outside of it
 window.addEventListener("click", (event) => {
     if (event.target == messageModal) {
-        messageModal.style.display = "none";
+        messageModal.classList.add("hidden");
     }
 });
 
@@ -213,11 +221,11 @@ const updateDashboardCounts = () => {
 
 // Fetch and display upcoming vaccinations
 const fetchUpcomingVaccinations = async () => {
-    loadingDiv.style.display = "block";
-    pendingSection.style.display = "none";
-    sentSection.style.display = "none";
-    searchSection.style.display = "none";
-    noDataMessage.style.display = "none";
+    loadingDiv.classList.remove("hidden");
+    pendingSection.classList.add("hidden");
+    sentSection.classList.add("hidden");
+    searchSection.classList.add("hidden");
+    noDataMessage.classList.add("hidden");
     filteredByBaby = false;
 
     try {
@@ -235,7 +243,7 @@ const fetchUpcomingVaccinations = async () => {
         const res = await fetch(`${API}/reminders/upcoming-vaccinations${query.toString() ? `?${query.toString()}` : ""}`);
         const data = await res.json();
 
-        loadingDiv.style.display = "none";
+        loadingDiv.classList.add("hidden");
 
         if (!res.ok) {
             showAlert(data.error || "Failed to fetch upcoming vaccinations", "error");
@@ -243,7 +251,7 @@ const fetchUpcomingVaccinations = async () => {
         }
 
         if (data.length === 0) {
-            noDataMessage.style.display = "block";
+            noDataMessage.classList.remove("hidden");
             return;
         }
 
@@ -276,15 +284,15 @@ const fetchUpcomingVaccinations = async () => {
 
         // Show/hide sections
         if (pendingVaccinations.length > 0) {
-            pendingSection.style.display = "block";
+            pendingSection.classList.remove("hidden");
         }
         if (sentVaccinations.length > 0) {
-            sentSection.style.display = "block";
+            sentSection.classList.remove("hidden");
         }
 
         updateDashboardCounts();
 
-        searchSection.style.display = "block";
+        searchSection.classList.remove("hidden");
         const totalVaccinations = pendingVaccinations.length + sentVaccinations.length;
         searchCount.textContent = `${totalVaccinations} vaccination${totalVaccinations !== 1 ? 's' : ''}`;
         searchInput.value = ""; // Clear search input
@@ -300,11 +308,11 @@ const fetchUpcomingVaccinations = async () => {
                     : `No upcoming vaccination reminders were found for ${babyName || "this child"} in the current month.`;
             }
 
-            noDataMessage.style.display = "block";
+            noDataMessage.classList.remove("hidden");
         }
 
     } catch (error) {
-        loadingDiv.style.display = "none";
+        loadingDiv.classList.add("hidden");
         showAlert("Error fetching vaccinations: " + error.message, "error");
     }
 };
@@ -328,7 +336,7 @@ const openMessageModal = (scheduleId, motherId, motherName, phone, vaccine, baby
     const automatedMessage = generateAutomatedMessage(motherName, baby, vaccine, dueDate);
     document.getElementById("messagePreview").value = automatedMessage;
     
-    messageModal.style.display = "block";
+    messageModal.classList.remove("hidden");
 };
 
 // Handle message form submission
@@ -362,14 +370,14 @@ messageForm.addEventListener("submit", async (e) => {
 
         if (res.ok && result.deliveryState === "delivered") {
             showAlert(result.message || "Vaccination reminder delivered successfully!", "success");
-            messageModal.style.display = "none";
+            messageModal.classList.add("hidden");
             setTimeout(() => {
                 fetchUpcomingVaccinations();
             }, 1500);
         } else if (res.status === 202) {
             const details = result.details ? ` Details: ${result.details}` : "";
             showAlert(`${result.error || "Delivery is still pending confirmation."}${details}`, "warning");
-            messageModal.style.display = "none";
+            messageModal.classList.add("hidden");
         } else {
             const details = result.details ? ` Details: ${result.details}` : "";
             showAlert(`${result.error || "Failed to send reminder"}${details}`, "error");

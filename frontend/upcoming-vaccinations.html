@@ -58,7 +58,7 @@
         <section class="section-stack">
             <div id="alertbox"></div>
 
-            <div class="search-card" id="searchSection" style="display: none;">
+            <div class="search-card" id="searchSection">
                 <div class="section-heading">
                     <div>
                         <h2>Search reminders</h2>
@@ -89,7 +89,7 @@
                 <p>Loading vaccination reminders...</p>
             </div>
 
-            <section class="table-card" id="pendingSection" style="display: none;">
+            <section class="table-card" id="pendingSection">
                 <div class="section-heading">
                     <div>
                         <h2>Pending reminders</h2>
@@ -114,7 +114,7 @@
                 </table>
             </section>
 
-            <section class="table-card" id="sentSection" style="display: none;">
+            <section class="table-card" id="sentSection">
                 <div class="section-heading">
                     <div>
                         <h2>Previously sent reminders</h2>
@@ -139,7 +139,7 @@
                 </table>
             </section>
 
-            <div id="noDataMessage" class="empty-state" style="display: none;">
+            <div id="noDataMessage" class="empty-state">
                 <strong>No pending vaccinations found.</strong>
                 <span>The current filter returned no reminder items to work on.</span>
             </div>
@@ -150,14 +150,14 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div>
-                    <span class="eyebrow" style="color: var(--brand-deep); background: var(--brand-soft);">Reminder preview</span>
-                    <h2 style="margin-top: 10px;">Send vaccination reminder</h2>
-                    <p style="margin-top: 8px;">Review the reminder details before sending it to the mother.</p>
+                    <span class="eyebrow eyebrow-brand">Reminder preview</span>
+                    <h2 class="spaced-top">Send vaccination reminder</h2>
+                    <p class="inline-note">Review the reminder details before sending it to the mother.</p>
                 </div>
                 <button type="button" class="close" aria-label="Close modal">&times;</button>
             </div>
 
-            <form id="messageForm" style="width: 100%; margin: 0; padding: 0; background: transparent; border: none; box-shadow: none;">
+            <form id="messageForm" class="form-full-width">
                 <input type="hidden" id="scheduleId">
                 <input type="hidden" id="motherId">
                 <input type="hidden" id="motherName">

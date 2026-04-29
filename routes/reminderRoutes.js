@@ -135,9 +135,10 @@ router.post("/send-vaccination-reminder", async (req, res) => {
                 message_id,
                 delivery_state,
                 provider_description,
-                last_checked_at
+                last_checked_at,
+                date_created
             )
-            VALUES (?, ?, NOW(), ?, ?, ?, ?, ?)
+            VALUES (?, ?, NOW(), ?, ?, ?, ?, ?, NOW())
         `, [
             mother_id,
             phone_no,
@@ -300,8 +301,8 @@ router.post("/complete-vaccination", async (req, res) => {
 
         if (!existingRecord.length) {
             await queryAsync(`
-                INSERT INTO vaccination_records (baby_id, vaccine_id, vaccination_date, status)
-                VALUES (?, ?, ?, 'Completed')
+                INSERT INTO vaccination_records (baby_id, vaccine_id, vaccination_date, status, date_created)
+                VALUES (?, ?, ?, 'Completed', NOW())
             `, [schedule.baby_id, schedule.vaccine_id, recordedDate]);
         }
 

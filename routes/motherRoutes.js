@@ -20,8 +20,8 @@ router.post("/register", (req, res) => {
 
     const sql = `
         INSERT INTO mothers 
-        (mother_name, national_id, phone_no, hospital_id)
-        VALUES (?, ?, ?, ?)
+        (mother_name, national_id, phone_no, hospital_id, date_created)
+        VALUES (?, ?, ?, ?, NOW())
     `;
 
     db.query(
@@ -53,7 +53,7 @@ router.get("/search", (req, res) => {
 
     const normalizedPhone = phone.replace(/[^0-9]/g, "");
     const motherSql = `
-        SELECT mother_id, mother_name, national_id, phone_no, hospital_id
+        SELECT mother_id, mother_name, national_id, phone_no, hospital_id, date_created
         FROM mothers
         WHERE REPLACE(REPLACE(REPLACE(phone_no, '+', ''), ' ', ''), '-', '') = ?
     `;

@@ -64,7 +64,7 @@ try {
     const hashedPassword = await bcrypt.hash(password, 10);
     console.log("Hashed:", hashedPassword); // ← confirm this prints in terminal
 
-    const sql = `INSERT INTO staff (staff_name, email, password, role, hospital_id) VALUES (?, ?, ?, ?, ?)`;
+    const sql = `INSERT INTO staff (staff_name, email, password, role, hospital_id, date_created) VALUES (?, ?, ?, ?, ?, NOW())`;
 
     db.query(sql, [staff_name, email, hashedPassword, role, hospital_id], (err) => {
         if (err) {

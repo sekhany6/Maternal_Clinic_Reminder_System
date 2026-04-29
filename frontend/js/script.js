@@ -227,19 +227,6 @@ const renderMotherSearchResults = (mother) => {
                     </tbody>
                 </table>
             </div>
-            <div class="child-schedule">
-                <h4 id="childScheduleHeader"></h4>
-                <table border="1" id="childScheduleTable">
-                    <thead>
-                        <tr>
-                            <th>Vaccine</th>
-                            <th>Due Date</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="childScheduleBody"></tbody>
-                </table>
-            </div>
         </div>
     `;
 
@@ -264,40 +251,6 @@ const renderMotherSearchResults = (mother) => {
             }
         });
     });
-};
-
-const fetchBabySchedule = async (babyId, babyName) => {
-    const childScheduleHeader = document.getElementById("childScheduleHeader");
-    const childScheduleBody = document.getElementById("childScheduleBody");
-    if (!childScheduleHeader || !childScheduleBody) return;
-
-    childScheduleHeader.textContent = `Vaccination schedule for ${babyName}`;
-    childScheduleBody.innerHTML = "<tr><td colspan=3>Loading schedule...</td></tr>";
-
-    try {
-        const res = await fetch(`${API}/vaccines/schedule/${encodeURIComponent(babyId)}`);
-        const schedule = await res.json();
-
-        if (!res.ok) {
-            childScheduleBody.innerHTML = `<tr><td colspan=3>${schedule.error || "Unable to load schedule."}</td></tr>`;
-            return;
-        }
-
-        if (!schedule.length) {
-            childScheduleBody.innerHTML = `<tr><td colspan=3>No vaccination schedule found.</td></tr>`;
-            return;
-        }
-
-        childScheduleBody.innerHTML = schedule.map(item => `
-            <tr>
-                <td>${item.vaccine_name}</td>
-                <td>${item.due_date}</td>
-                <td>${item.status}</td>
-            </tr>
-        `).join("");
-    } catch (error) {
-        childScheduleBody.innerHTML = `<tr><td colspan=3>Error loading schedule.</td></tr>`;
-    }
 };
 
 if (motherSearchForm) {

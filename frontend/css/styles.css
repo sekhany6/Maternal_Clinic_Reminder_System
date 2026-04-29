@@ -1050,6 +1050,18 @@ tbody tr:hover {
 }
 
 /* ============================================
+   LOADING SPINNER
+   ============================================ */
+.loading-spinner {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.55);
+    border-top-color: #ffffff;
+    animation: spin 0.85s linear infinite;
+}
+
+/* ============================================
    AUTH PAGES
    ============================================ */
 .auth-shell {
@@ -1348,10 +1360,13 @@ tbody tr:hover {
         font-weight: 700;
         color: var(--brand-deep);
     }
-}
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
+
+    .table-card,
+    .table-wrapper {
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+    }
 }
 
 .hero-note {

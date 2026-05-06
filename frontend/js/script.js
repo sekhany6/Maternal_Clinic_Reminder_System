@@ -82,7 +82,7 @@ const ensureBabyEditModal = () => {
                         </div>
                     </div>
                     <div class="btn-group">
-                        <button type="button" id="cancelBabyEdit" class="btn-cancel">Cancel</button>
+                        <button type="button" id="cancelBabyEdit" class="btn-cancel">Exit</button>
                         <button type="submit" class="btn-submit">Save changes</button>
                     </div>
                 </form>
@@ -99,6 +99,7 @@ const ensureBabyEditModal = () => {
     const cancelButton = document.getElementById("cancelBabyEdit");
 
     const closeModal = () => {
+        modal.classList.remove("visible");
         modal.classList.add("hidden");
         document.getElementById("babyEditAlert").innerHTML = "";
     };
@@ -146,7 +147,7 @@ const ensureBabyEditModal = () => {
 
             renderMotherSearchResults(currentMotherSearchResult);
             closeModal();
-            showInlineAlert("motherSearchAlert", result.message || "Child details updated successfully.", "success");
+            showInlineAlert("motherSearchAlert", result.message || "Child details updated successfully. The child list has been refreshed.", "success");
         } catch (error) {
             showInlineAlert("babyEditAlert", error.message, "error");
         }
@@ -160,7 +161,9 @@ const openBabyEditModal = (child) => {
     document.getElementById("editBabyDob").value = toDateInputValue(child.date_of_birth);
     document.getElementById("editBabyGender").value = child.gender || "";
     document.getElementById("babyEditAlert").innerHTML = "";
-    document.getElementById("babyEditModal").classList.add("visible");
+    const modal = document.getElementById("babyEditModal");
+    modal.classList.remove("hidden");
+    modal.classList.add("visible");
 };
 
 const closeSearchResults = () => {

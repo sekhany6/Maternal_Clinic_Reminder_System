@@ -110,7 +110,7 @@ router.get("/upcoming-vaccinations", (req, res) => {
 
 router.post("/send-vaccination-reminder", async (req, res) => {
     try {
-        const { schedule_id, mother_id, mother_name, phone_no, vaccine_name, baby_name, due_date } = req.body;
+        const { schedule_id, mother_id, mother_name, phone_no, vaccine_name, baby_name, due_date, message } = req.body;
 
         if (!schedule_id || !mother_id || !phone_no || !vaccine_name || !baby_name || !due_date || !mother_name) {
             return res.status(400).json({
@@ -120,7 +120,9 @@ router.post("/send-vaccination-reminder", async (req, res) => {
 
         const formattedPhone = formatPhone(phone_no);
         const dueDate = new Date(due_date).toDateString();
-        const smsMessage = `Hello ${mother_name}, your child ${baby_name} is due for ${vaccine_name} on ${dueDate}. Please visit the clinic.`;
+        const smsMessage = message && String(message).trim().length > 0
+            ? String(message).trim()
+            : `Hello ${mother_name}, your child ${baby_name} is due for ${vaccine_name} on ${dueDate}. Please visit the clinic.`;
         const trackingResult = await sendAndTrackSMS(formattedPhone, smsMessage);
         const deliverySnapshot = buildDeliverySnapshot(trackingResult);
 

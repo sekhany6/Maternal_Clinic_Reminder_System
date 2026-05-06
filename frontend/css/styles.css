@@ -1864,17 +1864,19 @@ tbody tr:hover {
 }
 
 .alert {
-    padding: 14px 16px;
-    margin-bottom: 16px;
-    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+    border-radius: 18px;
     border: 1px solid transparent;
+    font-weight: 700;
+    box-shadow: 0 10px 24px rgba(18, 63, 98, 0.08);
 }
 
 .alert-success,
 .success {
-    color: #1f624a;
-    background: #e2f4ea;
-    border-color: #c8e7d4;
+    color: #0f5132;
+    background: #d1e7dd;
+    border-color: #badbcc;
 }
 
 .alert-error,

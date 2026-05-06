@@ -121,17 +121,22 @@ searchInput.addEventListener("focus", () => {
 // Close modal when X is clicked
 closeBtn.addEventListener("click", () => {
     messageModal.classList.add("hidden");
+    messageModal.classList.remove("visible");
+    messageModal.style.display = 'none';
 });
 
 // Close modal when cancel button is clicked
 cancelBtn.addEventListener("click", () => {
     messageModal.classList.add("hidden");
+    messageModal.classList.remove("visible");
+    messageModal.style.display = 'none';
 });
 
 // Close modal when clicking outside of it
 window.addEventListener("click", (event) => {
     if (event.target == messageModal) {
         messageModal.classList.add("hidden");
+        messageModal.classList.remove("visible");
     }
 });
 
@@ -173,6 +178,14 @@ const getDeliveryBadge = (item) => {
         };
     }
 
+    if (latestStatus.startsWith("sent:")) {
+        return {
+            className: "delivery-indicator is-sent",
+            label: "Sent",
+            title: item.latest_message_status || "Reminder sent, awaiting delivery confirmation"
+        };
+    }
+
     return {
         className: "delivery-indicator",
         label: "Not Sent",
@@ -188,6 +201,7 @@ const createTableRow = (item, isResend = false) => {
     const deliveryBadge = getDeliveryBadge(item);
     const deliveryMarkup = `<span class="${deliveryBadge.className}" aria-label="${deliveryBadge.label}" title="${deliveryBadge.title}">${deliveryBadge.label}</span>`;
     
+    row.setAttribute("data-schedule-id", item.schedule_id);
     row.innerHTML = `
         <td data-label="Baby Name">${item.baby_name}</td>
         <td data-label="Mother Name">${item.mother_name}</td>
@@ -197,11 +211,23 @@ const createTableRow = (item, isResend = false) => {
         <td data-label="Status">${item.status}</td>
         <td data-label="Delivery">${deliveryMarkup}</td>
         <td data-label="Action">
-            <button type="button" class="send-btn" onclick="openMessageModal(${item.schedule_id}, ${item.mother_id}, '${item.mother_name}', '${item.phone_no}', '${item.vaccine_name}', '${item.baby_name}', '${item.due_date}')">
-                ${buttonText}
-            </button>
+            <button type="button" class="send-btn">${buttonText}</button>
         </td>
     `;
+
+    const button = row.querySelector(".send-btn");
+    button.addEventListener("click", () => {
+        openMessageModal(
+            item.schedule_id,
+            item.mother_id,
+            item.mother_name,
+            item.phone_no,
+            item.vaccine_name,
+            item.baby_name,
+            item.due_date
+        );
+    });
+
     return row;
 };
 
@@ -337,11 +363,37 @@ const openMessageModal = (scheduleId, motherId, motherName, phone, vaccine, baby
     document.getElementById("messagePreview").value = automatedMessage;
     
     messageModal.classList.remove("hidden");
+    messageModal.classList.add("visible");
+    messageModal.style.display = 'block';
+};
+
+// Update delivery status in the table
+const updateDeliveryStatus = (scheduleId, status) => {
+    const row = document.querySelector(`tr[data-schedule-id="${scheduleId}"]`);
+    if (row) {
+        const deliveryCell = row.querySelector('td[data-label="Delivery"]');
+        if (deliveryCell) {
+            const badge = status === "Sent" ? {
+                className: "delivery-indicator is-sent",
+                label: "Sent",
+                title: "Reminder sent, awaiting delivery confirmation"
+            } : {
+                className: "delivery-indicator is-pending",
+                label: "Pending",
+                title: "Delivery is still pending confirmation."
+            };
+            deliveryCell.innerHTML = `<span class="${badge.className}" aria-label="${badge.label}" title="${badge.title}">${badge.label}</span>`;
+        }
+    }
 };
 
 // Handle message form submission
 messageForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    const submitBtn = messageForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Sending...";
 
     const scheduleId = document.getElementById("scheduleId").value;
     const motherId = document.getElementById("motherId").value;
@@ -362,29 +414,32 @@ messageForm.addEventListener("submit", async (e) => {
                 phone_no: phoneNo,
                 vaccine_name: vaccName,
                 baby_name: babyName,
-                due_date: dueDate
+                due_date: dueDate,
+                message: document.getElementById("messagePreview").value.trim()
             })
         });
 
         const result = await res.json();
 
-        if (res.ok && result.deliveryState === "delivered") {
-            showAlert(result.message || "Vaccination reminder delivered successfully!", "success");
+        if (res.ok) {
+            showAlert("Sent successfully!", "success");
+            // Update delivery status to Sent
+            updateDeliveryStatus(scheduleId, "Sent");
             messageModal.classList.add("hidden");
+            messageModal.classList.remove("visible");
+            messageModal.style.display = 'none';
             setTimeout(() => {
                 fetchUpcomingVaccinations();
             }, 1500);
-        } else if (res.status === 202) {
-            const details = result.details ? ` Details: ${result.details}` : "";
-            showAlert(`${result.error || "Delivery is still pending confirmation."}${details}`, "warning");
-            messageModal.classList.add("hidden");
         } else {
-            const details = result.details ? ` Details: ${result.details}` : "";
-            showAlert(`${result.error || "Failed to send reminder"}${details}`, "error");
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Send Reminder";
         }
 
     } catch (error) {
         showAlert("Error sending reminder: " + error.message, "error");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Send Reminder";
     }
 });
 
